@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.disasterreport.controller.ReportIncidentController"
+      spacing="16"
+      style="-fx-background-color: #f0f2f5;">
+    <padding><Insets top="0" right="0" bottom="0" left="0"/></padding>
+
+    <!-- Header -->
+    <VBox style="-fx-background-color: white; -fx-border-color: #dde1e7;
+                 -fx-border-width: 0 0 1 0; -fx-padding: 16 24 16 24;">
+        <Label text="Report Incident"
+               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a2a4a;"/>
+        <Label text="Fill in the details below to report a new disaster incident."
+               style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
+    </VBox>
+
+    <!-- Form Card -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox spacing="16">
+            <padding><Insets top="8" right="24" bottom="24" left="24"/></padding>
+
+            <VBox spacing="14"
+                  style="-fx-background-color: white; -fx-background-radius: 8;
+                         -fx-border-color: #dde1e7; -fx-border-radius: 8;
+                         -fx-border-width: 1; -fx-padding: 24;">
+
+                <!-- Row 1: Type + Severity -->
+                <HBox spacing="16">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Incident Type *"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                        <ComboBox fx:id="incidentTypeCombo" maxWidth="Infinity"
+                                  promptText="Select type..."
+                                  style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                                         -fx-border-radius: 5; -fx-background-radius: 5;
+                                         -fx-font-size: 13px;"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Severity"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                        <ComboBox fx:id="severityCombo" maxWidth="Infinity"
+                                  promptText="Select severity..."
+                                  style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                                         -fx-border-radius: 5; -fx-background-radius: 5;
+                                         -fx-font-size: 13px;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Row 2: Location + Date -->
+                <HBox spacing="16">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Location *"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                        <TextField fx:id="locationField" promptText="e.g. Cebu City, Brgy. Lahug"
+                                   style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                                          -fx-border-radius: 5; -fx-background-radius: 5;
+                                          -fx-padding: 9 12 9 12; -fx-font-size: 13px;"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Date *"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                        <DatePicker fx:id="incidentDatePicker" maxWidth="Infinity"
+                                    style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                                           -fx-border-radius: 5; -fx-background-radius: 5;
+                                           -fx-font-size: 13px;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Description -->
+                <VBox spacing="6">
+                    <Label text="Description"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                    <TextArea fx:id="descriptionArea"
+                              promptText="Provide additional details about the incident..."
+                              prefRowCount="5" wrapText="true"
+                              style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                                     -fx-border-radius: 5; -fx-background-radius: 5;
+                                     -fx-font-size: 13px;"/>
+                </VBox>
+
+                <!-- Feedback Labels -->
+                <Label fx:id="validationLabel" text="" wrapText="true"
+                       style="-fx-text-fill: #dc2626; -fx-font-size: 12px;"
+                       visible="false" managed="false"/>
+                <Label fx:id="savingLabel" text="Saving..." wrapText="true"
+                       style="-fx-text-fill: #1a2a4a; -fx-font-size: 12px;"
+                       visible="false" managed="false"/>
+
+                <!-- Buttons -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <Button text="Clear"
+                            onAction="#handleClear"
+                            style="-fx-background-color: #f3f4f6; -fx-text-fill: #374151;
+                                   -fx-border-color: #d1d5db; -fx-border-radius: 5;
+                                   -fx-background-radius: 5; -fx-cursor: hand;
+                                   -fx-font-size: 13px; -fx-padding: 8 20 8 20;"/>
+                    <Button text="Submit Report"
+                            onAction="#handleSubmit"
+                            style="-fx-background-color: #1a2a4a; -fx-text-fill: white;
+                                   -fx-font-size: 13px; -fx-font-weight: bold;
+                                   -fx-background-radius: 5; -fx-cursor: hand;
+                                   -fx-padding: 8 20 8 20;"/>
+                </HBox>
+
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</VBox>

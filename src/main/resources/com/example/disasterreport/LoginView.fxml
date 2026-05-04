@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.disasterreport.controller.LoginController"
+      alignment="CENTER"
+      spacing="0"
+      style="-fx-background-color: #f0f2f5;">
+
+    <!-- Top Banner -->
+    <HBox alignment="CENTER_LEFT"
+          style="-fx-background-color: #1a2a4a; -fx-padding: 14 24 14 24;">
+        <Label text="Disaster Report System"
+               style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <!-- Card -->
+    <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
+        <VBox maxWidth="400"
+              spacing="14"
+              style="-fx-background-color: white;
+                     -fx-background-radius: 8;
+                     -fx-border-color: #dde1e7;
+                     -fx-border-radius: 8;
+                     -fx-border-width: 1;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 3);">
+            <padding><Insets top="36" right="36" bottom="36" left="36"/></padding>
+
+            <Label text="Welcome Back"
+                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a2a4a;"/>
+            <Label text="Sign in to your account."
+                   style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
+
+            <Region minHeight="4"/>
+
+            <Label text="Username"
+                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+            <TextField fx:id="usernameField"
+                       promptText="Enter username"
+                       style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                              -fx-border-radius: 5; -fx-background-radius: 5;
+                              -fx-padding: 9 12 9 12; -fx-font-size: 13px;"/>
+
+            <Label text="Password"
+                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+            <PasswordField fx:id="passwordField"
+                           promptText="Enter password"
+                           style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                                  -fx-border-radius: 5; -fx-background-radius: 5;
+                                  -fx-padding: 9 12 9 12; -fx-font-size: 13px;"/>
+
+            <Label fx:id="errorLabel"
+                   text=""
+                   wrapText="true"
+                   style="-fx-text-fill: #dc2626; -fx-font-size: 12px;"
+                   visible="false" managed="false"/>
+
+            <Region minHeight="4"/>
+
+            <Button fx:id="loginButton"
+                    text="Log In"
+                    maxWidth="Infinity"
+                    onAction="#handleLogin"
+                    style="-fx-background-color: #1a2a4a; -fx-text-fill: white;
+                           -fx-font-size: 14px; -fx-font-weight: bold;
+                           -fx-background-radius: 5; -fx-cursor: hand;
+                           -fx-padding: 10 0 10 0;"/>
+
+            <HBox alignment="CENTER" spacing="6">
+                <Label text="Don't have an account?"
+                       style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
+                <Hyperlink text="Register"
+                           onAction="#handleGoToRegister"
+                           style="-fx-font-size: 13px; -fx-text-fill: #1a2a4a; -fx-font-weight: bold;"/>
+            </HBox>
+
+        </VBox>
+    </VBox>
+
+    <!-- Footer -->
+    <HBox style="-fx-background-color: #e8eaed; -fx-padding: 4 12 4 12;">
+        <Label text="Ready" style="-fx-font-size: 11px; -fx-text-fill: #6b7280;"/>
+    </HBox>
+
+</VBox>
