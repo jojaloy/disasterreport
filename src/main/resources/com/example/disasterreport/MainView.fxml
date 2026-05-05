@@ -63,6 +63,11 @@
                            -fx-alignment: CENTER_LEFT; -fx-font-size: 13px;
                            -fx-background-radius: 5; -fx-cursor: hand;
                            -fx-padding: 9 12 9 12;"/>
+            <Button text="Map View" maxWidth="Infinity" onAction="#showMapView"
+                    style="-fx-background-color: transparent; -fx-text-fill: #374151;
+               -fx-alignment: CENTER_LEFT; -fx-font-size: 13px;
+               -fx-background-radius: 5; -fx-cursor: hand;
+               -fx-padding: 9 12 9 12;"/>
         </VBox>
 
         <!-- Main Content -->

@@ -73,13 +73,36 @@
                     </VBox>
                 </HBox>
 
+                <!-- Row 3: Latitude + Longitude -->
+                <HBox spacing="16">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Latitude"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                        <TextField fx:id="latitudeField" promptText="e.g. 10.3157"
+                                   style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                                          -fx-border-radius: 5; -fx-background-radius: 5;
+                                          -fx-padding: 9 12 9 12; -fx-font-size: 13px;"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Longitude"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                        <TextField fx:id="longitudeField" promptText="e.g. 123.8854"
+                                   style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
+                                          -fx-border-radius: 5; -fx-background-radius: 5;
+                                          -fx-padding: 9 12 9 12; -fx-font-size: 13px;"/>
+                    </VBox>
+                </HBox>
+                <Label text="💡 Tip: right-click any point on Google Maps → 'What's here?' to get coordinates."
+                       wrapText="true"
+                       style="-fx-font-size: 11px; -fx-text-fill: #9ca3af;"/>
+
                 <!-- Description -->
                 <VBox spacing="6">
                     <Label text="Description"
                            style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
                     <TextArea fx:id="descriptionArea"
                               promptText="Provide additional details about the incident..."
-                              prefRowCount="5" wrapText="true"
+                              prefRowCount="4" wrapText="true"
                               style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db;
                                      -fx-border-radius: 5; -fx-background-radius: 5;
                                      -fx-font-size: 13px;"/>
@@ -89,7 +112,7 @@
                 <Label fx:id="validationLabel" text="" wrapText="true"
                        style="-fx-text-fill: #dc2626; -fx-font-size: 12px;"
                        visible="false" managed="false"/>
-                <Label fx:id="savingLabel" text="Saving..." wrapText="true"
+                <Label fx:id="savingLabel" text="Saving…" wrapText="true"
                        style="-fx-text-fill: #1a2a4a; -fx-font-size: 12px;"
                        visible="false" managed="false"/>
 

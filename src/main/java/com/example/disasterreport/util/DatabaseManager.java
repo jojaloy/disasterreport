@@ -9,20 +9,15 @@ import java.util.List;
 
 public class DatabaseManager {
 
-    // Singleton: only one instance
     private static DatabaseManager instance;
     private Connection connection;
 
     private static final String URL  = "jdbc:mysql://localhost:3306/disasterreport_db";
     private static final String USER = "root";
-    private static final String PASS = ""; // change this to your MySQL password
+    private static final String PASS = ""; // change to your MySQL password
 
-    // Private constructor — no one can do new DatabaseManager()
-    private DatabaseManager() {
-        connect();
-    }
+    private DatabaseManager() { connect(); }
 
-    // Call this everywhere: DatabaseManager.getInstance()
     public static DatabaseManager getInstance() {
         if (instance == null) {
             instance = new DatabaseManager();
@@ -30,35 +25,30 @@ public class DatabaseManager {
         return instance;
     }
 
-    // Opens the JDBC connection
     private void connect() {
         try {
             connection = DriverManager.getConnection(URL, USER, PASS);
             System.out.println("Database connected successfully.");
         } catch (SQLException e) {
-            System.out.println("Database connection failed.");
-            e.printStackTrace();
+            System.out.println("Database connection failed: " + e.getMessage());
         }
     }
 
+    // ── User operations ───────────────────────────────────────────────────
+
     public boolean saveUser(User user) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
-
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getPassword());
             ps.setString(3, user.getRole());
-
-            int rows = ps.executeUpdate();
-            return rows > 0; // ✅ success if at least 1 row inserted
-
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // ❌ failed insert
+            return false;
         }
     }
 
-    // SELECT user by username and password — returns null if not found
     public User validateUser(String username, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -79,39 +69,63 @@ public class DatabaseManager {
         return null;
     }
 
-    // INSERT a new incident
+    // ── Incident operations ───────────────────────────────────────────────
+
+    /**
+     * INSERT a new incident (includes lat/lng if present).
+     *
+     * SQL schema expected:
+     *   ALTER TABLE incidents
+     *     ADD COLUMN latitude  DOUBLE NOT NULL DEFAULT 0,
+     *     ADD COLUMN longitude DOUBLE NOT NULL DEFAULT 0;
+     */
     public void saveIncident(Incident inc) {
-        String sql = "INSERT INTO incidents(type, location, description, date, status, severity, reportedBy) VALUES(?,?,?,?,?,?,?)";
+        String sql = """
+            INSERT INTO incidents
+              (type, location, description, date, status, severity, reportedBy, latitude, longitude)
+            VALUES (?,?,?,?,?,?,?,?,?)
+            """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, inc.getType());
             ps.setString(2, inc.getLocation());
             ps.setString(3, inc.getDescription());
-            ps.setDate(4, Date.valueOf(inc.getDate()));
+            ps.setDate  (4, Date.valueOf(inc.getDate()));
             ps.setString(5, inc.getStatus());
             ps.setString(6, inc.getSeverity());
             ps.setString(7, inc.getReportedBy());
+            ps.setDouble(8, inc.getLatitude());
+            ps.setDouble(9, inc.getLongitude());
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // SELECT all incidents — returns a List
+    /** SELECT all incidents ordered by date descending. */
     public List<Incident> getIncidents() {
         List<Incident> list = new ArrayList<>();
         String sql = "SELECT * FROM incidents ORDER BY date DESC";
-        try (Statement st = connection.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+        try (Statement st  = connection.createStatement();
+             ResultSet rs  = st.executeQuery(sql)) {
+
             while (rs.next()) {
+                // Gracefully handle tables that don't yet have lat/lng columns
+                double lat = 0.0, lng = 0.0;
+                try {
+                    lat = rs.getDouble("latitude");
+                    lng = rs.getDouble("longitude");
+                } catch (SQLException ignored) { /* columns not added yet */ }
+
                 list.add(new Incident(
-                        rs.getInt("incidentID"),
+                        rs.getInt   ("incidentID"),
                         rs.getString("type"),
                         rs.getString("location"),
                         rs.getString("description"),
-                        rs.getDate("date").toLocalDate(),
+                        rs.getDate  ("date").toLocalDate(),
                         rs.getString("status"),
                         rs.getString("severity"),
-                        rs.getString("reportedBy")
+                        rs.getString("reportedBy"),
+                        lat, lng
                 ));
             }
         } catch (SQLException e) {
@@ -120,12 +134,48 @@ public class DatabaseManager {
         return list;
     }
 
-    // UPDATE incident status by ID
+    /** UPDATE only the status field (used from IncidentListController). */
     public void updateIncidentStatus(int id, String status) {
         String sql = "UPDATE incidents SET status = ? WHERE incidentID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, status);
-            ps.setInt(2, id);
+            ps.setInt   (2, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Full UPDATE — updates every editable field.
+     * Called by IncidentListController.handleUpdateStatus() after setting
+     * the new status on the model object.
+     */
+    public void updateIncident(Incident inc) {
+        String sql = """
+            UPDATE incidents
+               SET type        = ?,
+                   location    = ?,
+                   description = ?,
+                   date        = ?,
+                   status      = ?,
+                   severity    = ?,
+                   reportedBy  = ?,
+                   latitude    = ?,
+                   longitude   = ?
+             WHERE incidentID  = ?
+            """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, inc.getType());
+            ps.setString(2, inc.getLocation());
+            ps.setString(3, inc.getDescription());
+            ps.setDate  (4, Date.valueOf(inc.getDate()));
+            ps.setString(5, inc.getStatus());
+            ps.setString(6, inc.getSeverity());
+            ps.setString(7, inc.getReportedBy());
+            ps.setDouble(8, inc.getLatitude());
+            ps.setDouble(9, inc.getLongitude());
+            ps.setInt   (10, inc.getIncidentID());
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

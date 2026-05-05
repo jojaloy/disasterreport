@@ -1,5 +1,6 @@
 package com.example.disasterreport.controller;
 
+import com.example.disasterreport.App;
 import com.example.disasterreport.model.User;
 import com.example.disasterreport.util.DatabaseManager;
 import javafx.fxml.FXML;
@@ -34,16 +35,17 @@ public class LoginController {
         }
     }
 
-    /** Navigate to the Register screen. */
     @FXML
     private void handleGoToRegister() {
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/example/disasterreport/RegisterView.fxml")
             );
-            Scene scene = new Scene(loader.load());
+            Scene scene = new Scene(loader.load(), 480, 700);
             Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.setScene(scene);
+            stage.setMinWidth(480);
+            stage.setMinHeight(700);
             stage.setTitle("Disaster Report System – Register");
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,14 +58,24 @@ public class LoginController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/example/disasterreport/MainView.fxml")
             );
-            Scene scene = new Scene(loader.load());
-            MainController ctrl = loader.getController();
-            ctrl.setCurrentUser(user);
+
+            // Load the FXML first so the controller is wired up
+            javafx.scene.Parent root = loader.load();
+
+            // Resize the window BEFORE showing the new scene
             Stage stage = (Stage) loginButton.getScene().getWindow();
+            App.resizeForMain(stage);
+
+            Scene scene = new Scene(root, 1024, 680);
             stage.setScene(scene);
             stage.setTitle("Disaster Report System");
+
+            MainController ctrl = loader.getController();
+            ctrl.setCurrentUser(user);
+
         } catch (Exception e) {
             e.printStackTrace();
+            showError("Could not load main view.");
         }
     }
 
