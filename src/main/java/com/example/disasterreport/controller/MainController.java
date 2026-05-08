@@ -7,110 +7,257 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.List;
 
-/**
- * MainController — shell controller that owns the sidebar, stats cards,
- * and the dynamic content area.
- *
- * Fixes applied
- * ─────────────
- * 1. Passes `this` (MainController) to ReportIncidentController so that
- *    refreshDashboard() is called automatically after every new report.
- * 2. showReportGenerator() now correctly loads the dedicated ReportGenerator
- *    view instead of accidentally reloading the ReportIncident form.
- *    (If you don't have a separate ReportGeneratorView.fxml yet, it falls
- *    back to ReportIncident.fxml — just swap the string when ready.)
- */
 public class MainController {
 
-    // ── FXML bindings ──────────────────────────────────────────────────────
     @FXML private VBox  contentArea;
     @FXML private Label loggedInUserLabel;
     @FXML private Label totalIncidentsLabel;
     @FXML private Label activeIncidentsLabel;
     @FXML private Label resolvedIncidentsLabel;
     @FXML private Label statusLabel;
+    @FXML private Label roleLabel;
 
-    // ── State ──────────────────────────────────────────────────────────────
+    // Sidebar buttons — controlled by role
+    @FXML private Button btnDashboard;
+    @FXML private Button btnReportIncident;
+    @FXML private Button btnIncidentList;
+    @FXML private Button btnGenerateReport;
+    @FXML private Button btnMapView;
+    @FXML private Button btnManageUsers;  // admin only
+
     private User currentUser;
 
-    // ── Called by LoginController after login ──────────────────────────────
-
+    // ── Called by LoginController after login ─────────────────────────────
     public void setCurrentUser(User user) {
         this.currentUser = user;
-        loggedInUserLabel.setText("Logged in as: " + user.getUsername());
+        loggedInUserLabel.setText(user.getUsername());
+        applyRoleRestrictions(user.getRole());
         refreshDashboard();
     }
 
-    // ── Dashboard refresh (public so child controllers can call it) ────────
-
     /**
-     * Re-queries the database and updates the three stat cards plus the
-     * "Recent Incidents" list.  Safe to call from any child controller
-     * that holds a reference to this MainController.
+     * Role-based access control:
+     *   admin     → full access to everything
+     *   responder → can view list + map + update status, cannot manage users
+     *   reporter  → can only report incidents + view dashboard
      */
+    private void applyRoleRestrictions(String role) {
+        String badge;
+        String badgeColor;
+
+        switch (role) {
+            case "admin" -> {
+                badge = "ADMIN";
+                badgeColor = "#dc2626";
+                // All buttons visible
+                btnManageUsers.setVisible(true);
+                btnManageUsers.setManaged(true);
+                btnIncidentList.setDisable(false);
+                btnGenerateReport.setDisable(false);
+                btnMapView.setDisable(false);
+            }
+            case "responder" -> {
+                badge = "RESPONDER";
+                badgeColor = "#d97706";
+                btnManageUsers.setVisible(false);
+                btnManageUsers.setManaged(false);
+                btnIncidentList.setDisable(false);
+                btnGenerateReport.setDisable(true);
+                btnMapView.setDisable(false);
+                btnReportIncident.setDisable(false);
+            }
+            default -> { // reporter
+                badge = "REPORTER";
+                badgeColor = "#16a34a";
+                btnManageUsers.setVisible(false);
+                btnManageUsers.setManaged(false);
+                btnIncidentList.setDisable(true);   // read-only list hidden
+                btnGenerateReport.setDisable(true);
+                btnMapView.setDisable(true);
+            }
+        }
+
+        roleLabel.setText(badge);
+        roleLabel.setStyle(
+                "-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: white;" +
+                        "-fx-background-color: " + badgeColor + ";" +
+                        "-fx-background-radius: 4; -fx-padding: 2 6 2 6;"
+        );
+    }
+
+    // Public so IncidentListController can call it after a status update
     public void refreshDashboard() {
         List<Incident> all = DatabaseManager.getInstance().getIncidents();
 
-        long active   = all.stream().filter(i -> "Active".equals(i.getStatus())).count();
-        long resolved = all.stream().filter(i -> "Resolved".equals(i.getStatus())).count();
+        long active     = all.stream().filter(i -> "Active".equals(i.getStatus())).count();
+        long resolved   = all.stream().filter(i -> "Resolved".equals(i.getStatus())).count();
+        long monitoring = all.stream().filter(i -> "Monitoring".equals(i.getStatus())).count();
 
         totalIncidentsLabel.setText(String.valueOf(all.size()));
         activeIncidentsLabel.setText(String.valueOf(active));
         resolvedIncidentsLabel.setText(String.valueOf(resolved));
 
-        // ── Recent incidents list ──────────────────────────────────────────
         contentArea.getChildren().clear();
+        contentArea.setSpacing(8);
 
         if (all.isEmpty()) {
-            contentArea.getChildren().add(new Label("No incidents reported yet."));
+            Label empty = new Label("No incidents reported yet.");
+            empty.setStyle("-fx-font-size: 13px; -fx-text-fill: #9ca3af;");
+            contentArea.getChildren().add(empty);
             return;
         }
 
-        // Show the five most recent (last in the date-DESC ordered list = oldest;
-        // take the tail so we show the newest ones).
+        // Show last 6 incidents
         List<Incident> recent = all.stream()
-                .limit(5)
+                .limit(6)
                 .toList();
 
         for (Incident i : recent) {
-            String emoji = emojiFor(i.getType());
-            Label row = new Label(
-                    emoji + "  " + i.getType()
-                            + "  |  " + i.getLocation()
-                            + "  |  " + i.getStatus()
-            );
-            row.setMaxWidth(Double.MAX_VALUE);
-            row.setStyle("""
-                -fx-padding: 10 14 10 14;
-                -fx-background-color: #f9fafb;
-                -fx-border-color: #e5e7eb;
-                -fx-border-radius: 5;
-                -fx-background-radius: 5;
-                -fx-font-size: 13px;
-            """);
-            contentArea.getChildren().add(row);
+            contentArea.getChildren().add(buildIncidentCard(i));
         }
     }
 
-    // ── Sidebar navigation ─────────────────────────────────────────────────
+    /** Build a polished incident card for the dashboard */
+    private Node buildIncidentCard(Incident i) {
+        // Outer card
+        javafx.scene.layout.HBox card = new javafx.scene.layout.HBox();
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setSpacing(0);
+        card.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-border-color: #e5e7eb;" +
+                        "-fx-border-radius: 8;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-border-width: 1;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);"
+        );
 
-    @FXML private void showDashboard()       { refreshDashboard(); }
-    @FXML private void showReportForm()      { loadView("ReportIncident.fxml"); }
-    @FXML private void showIncidentList()    { loadView("IncidentListView.fxml"); }
-    @FXML private void showMapView()         { loadView("MapView.fxml"); }
+        // Left accent bar (color by type)
+        javafx.scene.layout.Region accent = new javafx.scene.layout.Region();
+        accent.setMinWidth(5);
+        accent.setMaxWidth(5);
+        accent.setStyle("-fx-background-color: " + colorFor(i.getType()) + "; -fx-background-radius: 8 0 0 8;");
 
-    /**
-     * "Generate Report" sidebar button.
-     * Swap "ReportIncident.fxml" for your dedicated ReportGeneratorView.fxml
-     * once that view exists.
-     */
-    @FXML private void showReportGenerator() { loadView("ReportIncident.fxml"); }
+        // Content
+        javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(4);
+        content.setStyle("-fx-padding: 12 14 12 14;");
+        javafx.scene.layout.HBox.setHgrow(content, javafx.scene.layout.Priority.ALWAYS);
+
+        // Top row: type badge + location + date
+        javafx.scene.layout.HBox topRow = new javafx.scene.layout.HBox(8);
+        topRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        Label typeBadge = new Label(iconFor(i.getType()) + " " + i.getType());
+        typeBadge.setStyle(
+                "-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: white;" +
+                        "-fx-background-color: " + colorFor(i.getType()) + ";" +
+                        "-fx-background-radius: 4; -fx-padding: 2 7 2 7;"
+        );
+
+        Label location = new Label("📍 " + i.getLocation());
+        location.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a2a4a;");
+        javafx.scene.layout.HBox.setHgrow(location, javafx.scene.layout.Priority.ALWAYS);
+
+        Label date = new Label(i.getDateString());
+        date.setStyle("-fx-font-size: 11px; -fx-text-fill: #9ca3af;");
+
+        topRow.getChildren().addAll(typeBadge, location, date);
+
+        // Bottom row: description + status badge
+        javafx.scene.layout.HBox bottomRow = new javafx.scene.layout.HBox(8);
+        bottomRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        String desc = i.getDescription() != null && !i.getDescription().isEmpty()
+                ? i.getDescription()
+                : "No description provided.";
+        if (desc.length() > 70) desc = desc.substring(0, 70) + "…";
+
+        Label descLabel = new Label(desc);
+        descLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #6b7280;");
+        javafx.scene.layout.HBox.setHgrow(descLabel, javafx.scene.layout.Priority.ALWAYS);
+
+        Label statusBadge = new Label(statusIcon(i.getStatus()) + " " + i.getStatus());
+        statusBadge.setStyle(
+                "-fx-font-size: 11px; -fx-font-weight: bold;" +
+                        "-fx-text-fill: " + statusTextColor(i.getStatus()) + ";" +
+                        "-fx-background-color: " + statusBgColor(i.getStatus()) + ";" +
+                        "-fx-background-radius: 4; -fx-padding: 2 7 2 7;"
+        );
+
+        bottomRow.getChildren().addAll(descLabel, statusBadge);
+        content.getChildren().addAll(topRow, bottomRow);
+        card.getChildren().addAll(accent, content);
+        return card;
+    }
+
+    private String colorFor(String type) {
+        if (type == null) return "#6b7280";
+        return switch (type) {
+            case "Flood"      -> "#3b82f6";
+            case "Fire"       -> "#ef4444";
+            case "Earthquake" -> "#f97316";
+            case "Typhoon"    -> "#8b5cf6";
+            case "Landslide"  -> "#a16207";
+            default           -> "#6b7280";
+        };
+    }
+
+    private String iconFor(String type) {
+        if (type == null) return "⚠";
+        return switch (type) {
+            case "Flood"      -> "🌊";
+            case "Fire"       -> "🔥";
+            case "Earthquake" -> "⚡";
+            case "Typhoon"    -> "🌀";
+            case "Landslide"  -> "⛰";
+            default           -> "⚠";
+        };
+    }
+
+    private String statusIcon(String status) {
+        if (status == null) return "●";
+        return switch (status) {
+            case "Active"     -> "🔴";
+            case "Monitoring" -> "🟡";
+            case "Resolved"   -> "🟢";
+            default           -> "●";
+        };
+    }
+
+    private String statusTextColor(String status) {
+        if (status == null) return "#6b7280";
+        return switch (status) {
+            case "Active"     -> "#dc2626";
+            case "Monitoring" -> "#d97706";
+            case "Resolved"   -> "#16a34a";
+            default           -> "#6b7280";
+        };
+    }
+
+    private String statusBgColor(String status) {
+        if (status == null) return "#f3f4f6";
+        return switch (status) {
+            case "Active"     -> "#fee2e2";
+            case "Monitoring" -> "#fef3c7";
+            case "Resolved"   -> "#dcfce7";
+            default           -> "#f3f4f6";
+        };
+    }
+
+    // ── Sidebar navigation ────────────────────────────────────────────────
+    @FXML private void showDashboard()        { refreshDashboard(); }
+    @FXML private void showReportForm()       { loadView("ReportIncident.fxml"); }
+    @FXML private void showIncidentList()     { loadView("IncidentListView.fxml"); }
+    @FXML private void showMapView()          { loadView("MapView.fxml"); }
+    @FXML private void showReportGenerator()  { loadView("ReportIncident.fxml"); }
+    @FXML private void showManageUsers()      { loadView("ManageUsersView.fxml"); }
 
     @FXML
     private void handleLogout() {
@@ -120,7 +267,6 @@ public class MainController {
             );
             javafx.scene.Parent root = loader.load();
             Stage stage = (Stage) contentArea.getScene().getWindow();
-
             stage.setMinWidth(480);
             stage.setMinHeight(600);
             stage.setWidth(480);
@@ -133,56 +279,33 @@ public class MainController {
         }
     }
 
-    // ── Internal view loader ───────────────────────────────────────────────
-
+    // ── Internal loader ───────────────────────────────────────────────────
     private void loadView(String fxmlFile) {
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/example/disasterreport/" + fxmlFile)
             );
             Node view = loader.load();
-            Object ctrl = loader.getController();
+            Object controller = loader.getController();
 
-            // ── Wire up child controllers ──────────────────────────────────
-
-            if (ctrl instanceof IncidentListController lc) {
+            if (controller instanceof IncidentListController lc) {
                 lc.setMainController(this);
+                lc.setCurrentUserRole(currentUser != null ? currentUser.getRole() : "reporter");
             }
-
-            if (ctrl instanceof MapViewController mc) {
-                // Pass ALL incidents so the map can render pins immediately
+            if (controller instanceof MapViewController mc) {
                 mc.loadIncidents(DatabaseManager.getInstance().getIncidents());
             }
-
-            if (ctrl instanceof ReportIncidentController rc) {
-                if (currentUser != null) {
-                    rc.setCurrentUsername(currentUser.getUsername());
-                }
-                // FIX: pass this so the form can trigger a dashboard refresh
-                rc.setMainController(this);
+            if (controller instanceof ReportIncidentController rc && currentUser != null) {
+                rc.setCurrentUsername(currentUser.getUsername());
             }
 
             contentArea.getChildren().setAll(view);
 
         } catch (Exception e) {
             e.printStackTrace();
-            if (statusLabel != null) {
-                statusLabel.setText("Error loading view: " + fxmlFile);
-            }
+            statusLabel.setText("Error loading view: " + fxmlFile);
         }
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────
-
-    private String emojiFor(String type) {
-        if (type == null) return "⚠️";
-        return switch (type) {
-            case "Flood"      -> "🌊";
-            case "Fire"       -> "🔥";
-            case "Earthquake" -> "🌍";
-            case "Typhoon"    -> "🌀";
-            case "Landslide"  -> "⛰️";
-            default           -> "⚠️";
-        };
-    }
+    public User getCurrentUser() { return currentUser; }
 }

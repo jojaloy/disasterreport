@@ -181,4 +181,39 @@ public class DatabaseManager {
             e.printStackTrace();
         }
     }
+
+    // ── NEW: Get all users (admin panel) ────────────────────────────────────
+
+    public List<User> getAllUsers() {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT userID, username, role FROM users ORDER BY userID";
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(new User(
+                        rs.getInt("userID"),
+                        rs.getString("username"),
+                        "",   // never expose password in list
+                        rs.getString("role")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+// ── NEW: Update a user's role (admin panel) ─────────────────────────────
+
+    public boolean updateUserRole(int userID, String newRole) {
+        String sql = "UPDATE users SET role = ? WHERE userID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, newRole);
+            ps.setInt(2, userID);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
