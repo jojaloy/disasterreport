@@ -29,9 +29,8 @@ public class RegisterController implements Initializable {
         roleCombo.setItems(FXCollections.observableArrayList(
                 "reporter", "admin", "responder"
         ));
-        roleCombo.getSelectionModel().selectFirst();   // default: reporter
+        roleCombo.getSelectionModel().selectFirst();
 
-        // hide feedback labels initially
         setValidation(false, null);
         setSuccess(false, null);
     }
@@ -71,12 +70,18 @@ public class RegisterController implements Initializable {
 
         // ── Persist ───────────────────────────────────────────────────────
         User newUser = new User(0, username, password, role != null ? role : "reporter");
-        boolean registered = newUser.register();   // returns true on success
+        boolean registered = newUser.register();
 
         if (registered) {
-            setSuccess(true, "Account created! You can now log in.");
-            clearFields();
-            statusLabel.setText("Registration successful.");
+            // Show a brief success alert, then redirect to login
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Registration Successful");
+            alert.setHeaderText(null);
+            alert.setContentText("Account created successfully! You will now be redirected to the login page.");
+            alert.showAndWait();
+
+            // Auto-redirect to login after the user closes the alert
+            handleBackToLogin();
         } else {
             setValidation(true, "Username already exists. Please choose another.");
         }

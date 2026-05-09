@@ -3,147 +3,199 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.*?>
 
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.disasterreport.controller.RegisterController"
       alignment="CENTER"
       spacing="0"
-      style="-fx-background-color: #f0f2f5;">
+      style="-fx-background-color: #0d1b2a;">
 
-    <!-- Top Banner -->
-    <HBox alignment="CENTER_LEFT"
-          style="-fx-background-color: #1a2a4a; -fx-padding: 14 24 14 24;">
-        <Label text="Disaster Report System"
-               style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+    <!-- Top accent bar -->
+    <HBox alignment="CENTER_LEFT" minHeight="56"
+          style="-fx-background-color: linear-gradient(to right, #0d1b2a, #1a3a5c);
+                 -fx-padding: 0 28 0 0;
+                 -fx-border-color: #1e3a5f;
+                 -fx-border-width: 0 0 1 0;">
+        <Rectangle width="4" height="56"
+                   style="-fx-fill: linear-gradient(to bottom, #38bdf8, #0ea5e9);"/>
+        <VBox spacing="1" style="-fx-padding: 0 0 0 18;">
+            <Label text="DISASTER ALERT SYSTEM"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold;
+                          -fx-text-fill: #f0f9ff; -fx-font-family: 'Segoe UI';
+                          -fx-letter-spacing: 1.5;"/>
+            <Label text="Emergency Incident Management"
+                   style="-fx-font-size: 11px; -fx-text-fill: #38bdf8;
+                          -fx-font-family: 'Segoe UI';"/>
+        </VBox>
     </HBox>
 
-    <!-- Card -->
-    <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
-        <VBox maxWidth="420"
-              spacing="14"
-              style="-fx-background-color: white;
-                     -fx-background-radius: 8;
-                     -fx-border-color: #dde1e7;
-                     -fx-border-radius: 8;
-                     -fx-border-width: 1;
-                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 3);">
-            <padding><Insets top="36" right="36" bottom="36" left="36"/></padding>
+    <!-- Register card -->
+    <VBox alignment="CENTER" VBox.vgrow="ALWAYS"
+          style="-fx-background-color: #0d1b2a;">
 
-            <!-- Title -->
-            <Label text="Create Account"
-                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a2a4a;"/>
-            <Label text="Fill in your details to register."
-                   style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background-color: transparent; -fx-background: transparent;
+                           -fx-border-color: transparent;" maxWidth="460">
+            <VBox alignment="CENTER" style="-fx-padding: 30 0 30 0;">
 
-            <Region minHeight="4"/>
+                <VBox maxWidth="420" spacing="0"
+                      style="-fx-background-color: #1a2f45;
+                             -fx-background-radius: 16;
+                             -fx-border-color: #1e3a5f;
+                             -fx-border-radius: 16;
+                             -fx-border-width: 1;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 32, 0, 0, 8);">
 
-            <!-- Full Name -->
-            <Label text="Full Name"
-                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
-            <TextField fx:id="fullNameField"
-                       promptText="Enter your full name"
-                       style="-fx-background-color: #f9fafb;
-                              -fx-border-color: #d1d5db;
-                              -fx-border-radius: 5;
-                              -fx-background-radius: 5;
-                              -fx-padding: 9 12 9 12;
-                              -fx-font-size: 13px;"/>
+                    <!-- Card header -->
+                    <VBox style="-fx-background-color: #142033;
+                                 -fx-background-radius: 16 16 0 0;
+                                 -fx-padding: 24 30 20 30;
+                                 -fx-border-color: #1e3a5f;
+                                 -fx-border-width: 0 0 1 0;">
+                        <Label text="Create Account"
+                               style="-fx-font-size: 22px; -fx-font-weight: bold;
+                                      -fx-text-fill: #f0f9ff; -fx-font-family: 'Segoe UI';"/>
+                        <Label text="Fill in your details to register."
+                               style="-fx-font-size: 13px; -fx-text-fill: #64748b;
+                                      -fx-font-family: 'Segoe UI'; -fx-padding: 4 0 0 0;"/>
+                    </VBox>
 
-            <!-- Username -->
-            <Label text="Username *"
-                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
-            <TextField fx:id="usernameField"
-                       promptText="Choose a username"
-                       style="-fx-background-color: #f9fafb;
-                              -fx-border-color: #d1d5db;
-                              -fx-border-radius: 5;
-                              -fx-background-radius: 5;
-                              -fx-padding: 9 12 9 12;
-                              -fx-font-size: 13px;"/>
+                    <!-- Fields -->
+                    <VBox spacing="13" style="-fx-padding: 24 30 28 30;">
 
-            <!-- Password -->
-            <Label text="Password *"
-                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
-            <PasswordField fx:id="passwordField"
-                           promptText="Create a password"
-                           style="-fx-background-color: #f9fafb;
-                                  -fx-border-color: #d1d5db;
-                                  -fx-border-radius: 5;
-                                  -fx-background-radius: 5;
-                                  -fx-padding: 9 12 9 12;
-                                  -fx-font-size: 13px;"/>
+                        <VBox spacing="5">
+                            <Label text="FULL NAME"
+                                   style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                          -fx-text-fill: #38bdf8; -fx-letter-spacing: 1.2;
+                                          -fx-font-family: 'Segoe UI';"/>
+                            <TextField fx:id="fullNameField"
+                                       promptText="Your full name"
+                                       style="-fx-background-color: #0f2233;
+                                              -fx-border-color: #1e3a5f;
+                                              -fx-border-radius: 8; -fx-background-radius: 8;
+                                              -fx-text-fill: #f0f9ff;
+                                              -fx-prompt-text-fill: #334155;
+                                              -fx-padding: 10 14 10 14;
+                                              -fx-font-size: 13px; -fx-font-family: 'Segoe UI';"/>
+                        </VBox>
 
-            <!-- Confirm Password -->
-            <Label text="Confirm Password *"
-                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
-            <PasswordField fx:id="confirmPasswordField"
-                           promptText="Re-enter your password"
-                           style="-fx-background-color: #f9fafb;
-                                  -fx-border-color: #d1d5db;
-                                  -fx-border-radius: 5;
-                                  -fx-background-radius: 5;
-                                  -fx-padding: 9 12 9 12;
-                                  -fx-font-size: 13px;"/>
+                        <VBox spacing="5">
+                            <Label text="USERNAME *"
+                                   style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                          -fx-text-fill: #38bdf8; -fx-letter-spacing: 1.2;
+                                          -fx-font-family: 'Segoe UI';"/>
+                            <TextField fx:id="usernameField"
+                                       promptText="Choose a username (min 3 chars)"
+                                       style="-fx-background-color: #0f2233;
+                                              -fx-border-color: #1e3a5f;
+                                              -fx-border-radius: 8; -fx-background-radius: 8;
+                                              -fx-text-fill: #f0f9ff;
+                                              -fx-prompt-text-fill: #334155;
+                                              -fx-padding: 10 14 10 14;
+                                              -fx-font-size: 13px; -fx-font-family: 'Segoe UI';"/>
+                        </VBox>
 
-            <!-- Role -->
-            <Label text="Role"
-                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
-            <ComboBox fx:id="roleCombo"
-                      maxWidth="Infinity"
-                      style="-fx-background-color: #f9fafb;
-                             -fx-border-color: #d1d5db;
-                             -fx-border-radius: 5;
-                             -fx-background-radius: 5;
-                             -fx-font-size: 13px;"/>
+                        <VBox spacing="5">
+                            <Label text="PASSWORD *"
+                                   style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                          -fx-text-fill: #38bdf8; -fx-letter-spacing: 1.2;
+                                          -fx-font-family: 'Segoe UI';"/>
+                            <PasswordField fx:id="passwordField"
+                                           promptText="Create a password (min 6 chars)"
+                                           style="-fx-background-color: #0f2233;
+                                                  -fx-border-color: #1e3a5f;
+                                                  -fx-border-radius: 8; -fx-background-radius: 8;
+                                                  -fx-text-fill: #f0f9ff;
+                                                  -fx-prompt-text-fill: #334155;
+                                                  -fx-padding: 10 14 10 14;
+                                                  -fx-font-size: 13px; -fx-font-family: 'Segoe UI';"/>
+                        </VBox>
 
-            <!-- Validation Label -->
-            <Label fx:id="validationLabel"
-                   text=""
-                   wrapText="true"
-                   maxWidth="Infinity"
-                   style="-fx-text-fill: #dc2626; -fx-font-size: 12px;"
-                   visible="false" managed="false"/>
+                        <VBox spacing="5">
+                            <Label text="CONFIRM PASSWORD *"
+                                   style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                          -fx-text-fill: #38bdf8; -fx-letter-spacing: 1.2;
+                                          -fx-font-family: 'Segoe UI';"/>
+                            <PasswordField fx:id="confirmPasswordField"
+                                           promptText="Re-enter your password"
+                                           style="-fx-background-color: #0f2233;
+                                                  -fx-border-color: #1e3a5f;
+                                                  -fx-border-radius: 8; -fx-background-radius: 8;
+                                                  -fx-text-fill: #f0f9ff;
+                                                  -fx-prompt-text-fill: #334155;
+                                                  -fx-padding: 10 14 10 14;
+                                                  -fx-font-size: 13px; -fx-font-family: 'Segoe UI';"/>
+                        </VBox>
 
-            <!-- Success Label -->
-            <Label fx:id="successLabel"
-                   text=""
-                   wrapText="true"
-                   maxWidth="Infinity"
-                   style="-fx-text-fill: #16a34a; -fx-font-size: 12px;"
-                   visible="false" managed="false"/>
+                        <VBox spacing="5">
+                            <Label text="ROLE"
+                                   style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                          -fx-text-fill: #38bdf8; -fx-letter-spacing: 1.2;
+                                          -fx-font-family: 'Segoe UI';"/>
+                            <ComboBox fx:id="roleCombo" maxWidth="Infinity"
+                                      style="-fx-background-color: #0f2233;
+                                             -fx-border-color: #1e3a5f;
+                                             -fx-border-radius: 8; -fx-background-radius: 8;
+                                             -fx-font-size: 13px; -fx-font-family: 'Segoe UI';"/>
+                        </VBox>
 
-            <Region minHeight="4"/>
+                        <!-- Feedback labels -->
+                        <Label fx:id="validationLabel" text="" wrapText="true"
+                               maxWidth="Infinity"
+                               style="-fx-text-fill: #fca5a5; -fx-font-size: 12px;
+                                      -fx-font-family: 'Segoe UI';
+                                      -fx-background-color: #450a0a;
+                                      -fx-background-radius: 6; -fx-padding: 8 12 8 12;"
+                               visible="false" managed="false"/>
 
-            <!-- Register Button -->
-            <Button text="Register"
-                    maxWidth="Infinity"
-                    onAction="#handleRegister"
-                    style="-fx-background-color: #1a2a4a;
-                           -fx-text-fill: white;
-                           -fx-font-size: 14px;
-                           -fx-font-weight: bold;
-                           -fx-background-radius: 5;
-                           -fx-cursor: hand;
-                           -fx-padding: 10 0 10 0;"/>
+                        <Label fx:id="successLabel" text="" wrapText="true"
+                               maxWidth="Infinity"
+                               style="-fx-text-fill: #86efac; -fx-font-size: 12px;
+                                      -fx-font-family: 'Segoe UI';
+                                      -fx-background-color: #052e16;
+                                      -fx-background-radius: 6; -fx-padding: 8 12 8 12;"
+                               visible="false" managed="false"/>
 
-            <!-- Back to Login -->
-            <HBox alignment="CENTER" spacing="6">
-                <Label text="Already have an account?"
-                       style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
-                <Hyperlink text="Back to Login"
-                           onAction="#handleBackToLogin"
-                           style="-fx-font-size: 13px; -fx-text-fill: #1a2a4a; -fx-font-weight: bold;"/>
-            </HBox>
+                        <Region minHeight="4"/>
 
-        </VBox>
+                        <Button text="Create Account  →"
+                                maxWidth="Infinity"
+                                onAction="#handleRegister"
+                                style="-fx-background-color: linear-gradient(to right, #0ea5e9, #38bdf8);
+                                       -fx-text-fill: #0d1b2a;
+                                       -fx-font-size: 14px; -fx-font-weight: bold;
+                                       -fx-font-family: 'Segoe UI';
+                                       -fx-background-radius: 8; -fx-cursor: hand;
+                                       -fx-padding: 12 0 12 0;"/>
+
+                        <HBox alignment="CENTER" spacing="6">
+                            <Label text="Already have an account?"
+                                   style="-fx-font-size: 13px; -fx-text-fill: #64748b;
+                                          -fx-font-family: 'Segoe UI';"/>
+                            <Hyperlink text="Back to Login"
+                                       onAction="#handleBackToLogin"
+                                       style="-fx-font-size: 13px; -fx-text-fill: #38bdf8;
+                                              -fx-font-weight: bold; -fx-font-family: 'Segoe UI';
+                                              -fx-border-color: transparent;"/>
+                        </HBox>
+
+                    </VBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
     </VBox>
 
-    <!-- Footer Status Bar -->
-    <HBox style="-fx-background-color: #e8eaed; -fx-padding: 4 12 4 12;">
+    <!-- Footer -->
+    <HBox style="-fx-background-color: #0a1628;
+                 -fx-border-color: #1e3a5f; -fx-border-width: 1 0 0 0;
+                 -fx-padding: 6 16 6 16;"
+          alignment="CENTER_LEFT" spacing="8">
+        <Label text="●" style="-fx-text-fill: #4ade80; -fx-font-size: 9px;"/>
         <Label fx:id="statusLabel" text="Ready"
-               style="-fx-font-size: 11px; -fx-text-fill: #6b7280;"/>
+               style="-fx-font-size: 11px; -fx-text-fill: #334155;
+                      -fx-font-family: 'Segoe UI';"/>
     </HBox>
 
 </VBox>
