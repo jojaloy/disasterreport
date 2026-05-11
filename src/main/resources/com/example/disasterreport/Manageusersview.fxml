@@ -4,61 +4,95 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<!--
+    ManageUsersView.fxml — Updated color scheme:
+    White background, #0f1623 text, #e8550a primary button
+    Matches the rest of the updated UI system.
+-->
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.disasterreport.controller.ManageUsersController"
       spacing="0"
-      style="-fx-background-color: #f0f2f5;">
+      style="-fx-background-color: white;">
 
     <!-- Header -->
-    <VBox style="-fx-background-color: white; -fx-border-color: #dde1e7;
-                 -fx-border-width: 0 0 1 0; -fx-padding: 16 24 16 24;">
-        <Label text="👥 Manage Users"
-               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a2a4a;"/>
+    <VBox style="-fx-background-color: white;
+                 -fx-border-color: #e2e5ea;
+                 -fx-border-width: 0 0 1 0;
+                 -fx-padding: 18 26 18 26;">
+        <Label text="👥  Manage Users"
+               style="-fx-font-size: 20px;
+                      -fx-font-weight: bold;
+                      -fx-text-fill: #0f1623;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         <Label text="Admin only — view and manage all registered accounts."
-               style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
+               style="-fx-font-size: 13px;
+                      -fx-text-fill: #6b7280;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </VBox>
 
     <!-- Table -->
     <VBox VBox.vgrow="ALWAYS" spacing="0"
-          style="-fx-background-color: white; -fx-padding: 16 24 16 24;">
+          style="-fx-background-color: white; -fx-padding: 18 26 0 26;">
         <TableView fx:id="userTable" VBox.vgrow="ALWAYS"
-                   style="-fx-border-color: #dde1e7; -fx-border-radius: 6; -fx-background-radius: 6;">
+                   style="-fx-border-color: #e2e5ea;
+                          -fx-border-radius: 8;
+                          -fx-background-radius: 8;
+                          -fx-font-family: 'Segoe UI', 'Arial', sans-serif;">
             <columns>
                 <TableColumn fx:id="idCol"       text="ID"       prefWidth="60"/>
-                <TableColumn fx:id="usernameCol" text="Username" prefWidth="180"/>
-                <TableColumn fx:id="roleCol"     text="Role"     prefWidth="130"/>
+                <TableColumn fx:id="usernameCol" text="Username" prefWidth="200"/>
+                <TableColumn fx:id="roleCol"     text="Role"     prefWidth="150"/>
             </columns>
             <placeholder>
                 <Label text="No users found."
-                       style="-fx-text-fill: #9ca3af; -fx-font-size: 13px;"/>
+                       style="-fx-text-fill: #9ca3af;
+                              -fx-font-size: 13px;
+                              -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
             </placeholder>
         </TableView>
     </VBox>
 
-    <!-- Bottom bar -->
+    <!-- Bottom action bar -->
     <HBox spacing="10" alignment="CENTER_LEFT"
-          style="-fx-background-color: #f7f8fa; -fx-border-color: #dde1e7;
-                 -fx-border-width: 1 0 0 0; -fx-padding: 10 24 10 24;">
+          style="-fx-background-color: #fafbfc;
+                 -fx-border-color: #e2e5ea;
+                 -fx-border-width: 1 0 0 0;
+                 -fx-padding: 12 26 12 26;">
         <Label fx:id="countLabel"
                text="0 users"
-               style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
+               style="-fx-font-size: 13px;
+                      -fx-text-fill: #6b7280;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         <Region HBox.hgrow="ALWAYS"/>
         <ComboBox fx:id="roleChangeCombo"
                   promptText="Change role to…"
-                  prefWidth="160"
-                  style="-fx-font-size: 13px;"/>
+                  prefWidth="170"
+                  style="-fx-font-size: 13px;
+                         -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <!-- Primary: orange-red -->
         <Button text="Apply Role Change"
                 onAction="#handleChangeRole"
-                style="-fx-background-color: #1a2a4a; -fx-text-fill: white;
-                       -fx-background-radius: 5; -fx-cursor: hand;
-                       -fx-font-size: 13px; -fx-padding: 7 16 7 16;"/>
-        <Button text="Refresh"
+                style="-fx-background-color: #e8550a;
+                       -fx-text-fill: white;
+                       -fx-background-radius: 6;
+                       -fx-cursor: hand;
+                       -fx-font-size: 13px;
+                       -fx-font-weight: bold;
+                       -fx-padding: 8 18 8 18;
+                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <!-- Secondary: outlined navy -->
+        <Button text="↻  Refresh"
                 onAction="#handleRefresh"
-                style="-fx-background-color: transparent; -fx-text-fill: #1a2a4a;
-                       -fx-border-color: #1a2a4a; -fx-border-radius: 5;
-                       -fx-background-radius: 5; -fx-cursor: hand;
-                       -fx-font-size: 13px; -fx-padding: 7 14 7 14;"/>
+                style="-fx-background-color: transparent;
+                       -fx-text-fill: #0f1623;
+                       -fx-border-color: #0f1623;
+                       -fx-border-radius: 6;
+                       -fx-background-radius: 6;
+                       -fx-cursor: hand;
+                       -fx-font-size: 13px;
+                       -fx-padding: 8 14 8 14;
+                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </HBox>
 
 </VBox>

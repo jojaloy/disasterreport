@@ -3,19 +3,19 @@ package com.example.disasterreport.controller;
 import com.example.disasterreport.model.Incident;
 import com.example.disasterreport.model.User;
 import com.example.disasterreport.util.DatabaseManager;
-import javafx.animation.FadeTransition;
-import javafx.animation.TranslateTransition;
-import javafx.animation.ParallelTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class MainController {
@@ -33,220 +33,96 @@ public class MainController {
     public void setCurrentUser(User user) {
         this.currentUser = user;
         loggedInUserLabel.setText("Logged in as: " + user.getUsername());
-        showDashboardContent();
+        refreshDashboard();
     }
 
-    /**
-     * Refreshes ONLY the three counter labels.
-     * Safe to call from any sub-controller at any time.
-     */
+    // Public so IncidentListController can call it after a status update
     public void refreshDashboard() {
         List<Incident> all = DatabaseManager.getInstance().getIncidents();
 
-        long active     = all.stream().filter(i -> "Active".equals(i.getStatus())).count();
-        long monitoring = all.stream().filter(i -> "Monitoring".equals(i.getStatus())).count();
-        long resolved   = all.stream().filter(i -> "Resolved".equals(i.getStatus())).count();
+        long active   = all.stream().filter(i -> "Active".equals(i.getStatus())).count();
+        long resolved = all.stream().filter(i -> "Resolved".equals(i.getStatus())).count();
 
         totalIncidentsLabel.setText(String.valueOf(all.size()));
-        activeIncidentsLabel.setText(String.valueOf(active + monitoring));
+        activeIncidentsLabel.setText(String.valueOf(active));
         resolvedIncidentsLabel.setText(String.valueOf(resolved));
-    }
 
-    /**
-     * Refreshes counters AND rebuilds the incident rows in the content area.
-     * Called only when the user explicitly views the dashboard.
-     */
-    private void showDashboardContent() {
-        refreshDashboard();
-
-        List<Incident> all = DatabaseManager.getInstance().getIncidents();
         contentArea.getChildren().clear();
 
         if (all.isEmpty()) {
             Label empty = new Label("No incidents reported yet.");
-            empty.setStyle(
-                    "-fx-font-size: 13px; -fx-text-fill: #475569; " +
-                            "-fx-padding: 20 22 20 22; -fx-font-family: 'Segoe UI';"
-            );
+            empty.setStyle("-fx-font-size: 13px; -fx-text-fill: #9ca3af;" +
+                    "-fx-font-family: 'Segoe UI', 'Arial', sans-serif;");
             contentArea.getChildren().add(empty);
+
+            statusLabel.setText("Ready · 0 incidents loaded");
             return;
         }
 
-        // Newest 10 incidents first
+        // ── Column header row ──────────────────────────────────────────────
+        HBox header = new HBox(0);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setStyle("-fx-padding: 0 0 6 0;");
+
+        header.getChildren().addAll(
+                headerCell("#",        52),
+                headerCell("Type",     100),
+                headerCell("Location", 200),
+                headerCell("Date",     110),
+                headerCell("Status",   100)
+        );
+        contentArea.getChildren().add(header);
+
+        // ── Last 5 incidents ───────────────────────────────────────────────
         List<Incident> recent = all.stream()
-                .sorted((a, b) -> {
-                    if (a.getDate() == null && b.getDate() == null) return 0;
-                    if (a.getDate() == null) return 1;
-                    if (b.getDate() == null) return -1;
-                    return b.getDate().compareTo(a.getDate());
-                })
-                .limit(10)
+                .skip(Math.max(0, all.size() - 5))
                 .toList();
 
-        for (int i = 0; i < recent.size(); i++) {
-            HBox row = buildIncidentRow(recent.get(i), i % 2 == 0);
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM d, yyyy");
+
+        for (Incident inc : recent) {
+            HBox row = new HBox(0);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(Double.MAX_VALUE);
+            row.setStyle("""
+                -fx-background-color: white;
+                -fx-border-color: #e2e5ea;
+                -fx-border-radius: 6;
+                -fx-background-radius: 6;
+                -fx-border-width: 1;
+                -fx-padding: 10 14 10 14;
+            """);
+
+            // ID
+            Label idLbl = dataCell("#" + inc.getIncidentID(), 52);
+
+            // Type — bold
+            Label typeLbl = dataCell(inc.getType(), 100);
+            typeLbl.setStyle(typeLbl.getStyle() + "-fx-font-weight: bold;");
+
+            // Location
+            Label locLbl = dataCell(inc.getLocation(), 200);
+
+            // Date
+            String dateStr = inc.getDate() != null ? inc.getDate().format(fmt) : "";
+            Label dateLbl = dataCell(dateStr, 110);
+
+            // Status badge pill
+            Label statusBadge = new Label(inc.getStatus());
+            statusBadge.setMinWidth(90);
+            statusBadge.setMaxWidth(90);
+            statusBadge.setAlignment(Pos.CENTER);
+            statusBadge.setStyle(statusBadgeStyle(inc.getStatus()));
+
+            row.getChildren().addAll(idLbl, typeLbl, locLbl, dateLbl, statusBadge);
             contentArea.getChildren().add(row);
-            animateRowIn(row, i);
         }
-    }
 
-    /**
-     * Builds one colour-coded incident row:
-     *   [type badge] [location] [status badge] [date] [reported by]
-     */
-    private HBox buildIncidentRow(Incident inc, boolean alternate) {
-        HBox row = new HBox();
-        row.setSpacing(0);
-        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        row.setMinHeight(50);
-        row.setMaxWidth(Double.MAX_VALUE);
-
-        String rowBg = alternate ? "#1a2f45" : "#16283a";
-        String rowStyle = "-fx-background-color: " + rowBg + ";" +
-                "-fx-padding: 10 22 10 22;" +
-                "-fx-border-color: #1e3a5f;" +
-                "-fx-border-width: 0 0 1 0;";
-        row.setStyle(rowStyle);
-
-        // Type badge
-        String[] tc = typeColors(inc.getType());
-        Label typeBadge = new Label(typeEmoji(inc.getType()) + "  " + nvl(inc.getType(), "Unknown"));
-        typeBadge.setMinWidth(140);
-        typeBadge.setMaxWidth(140);
-        typeBadge.setStyle(
-                "-fx-background-color: " + tc[0] + ";" +
-                        "-fx-text-fill: " + tc[1] + ";" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-padding: 5 10 5 10;" +
-                        "-fx-font-size: 11px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-font-family: 'Segoe UI';"
-        );
-
-        // Location
-        Label locLabel = new Label(nvl(inc.getLocation(), "Unknown location"));
-        locLabel.setMinWidth(200);
-        locLabel.setMaxWidth(200);
-        locLabel.setStyle(
-                "-fx-font-size: 13px;" +
-                        "-fx-text-fill: #cbd5e1;" +
-                        "-fx-font-family: 'Segoe UI';"
-        );
-
-        // Status badge
-        String[] sc = statusColors(inc.getStatus());
-        Label statusBadge = new Label(nvl(inc.getStatus(), "Unknown"));
-        statusBadge.setMinWidth(120);
-        statusBadge.setMaxWidth(120);
-        statusBadge.setStyle(
-                "-fx-background-color: " + sc[0] + ";" +
-                        "-fx-text-fill: " + sc[1] + ";" +
-                        "-fx-background-radius: 999;" +
-                        "-fx-padding: 4 12 4 12;" +
-                        "-fx-font-size: 11px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-font-family: 'Segoe UI';"
-        );
-
-        // Date
-        Label dateLabel = new Label(nvl(inc.getDateString(), "—"));
-        dateLabel.setMinWidth(110);
-        dateLabel.setMaxWidth(110);
-        dateLabel.setStyle(
-                "-fx-font-size: 12px;" +
-                        "-fx-text-fill: #64748b;" +
-                        "-fx-font-family: 'Segoe UI';"
-        );
-
-        // Reported by
-        Label reportedLabel = new Label(nvl(inc.getReportedBy(), "—"));
-        reportedLabel.setStyle(
-                "-fx-font-size: 12px;" +
-                        "-fx-text-fill: #475569;" +
-                        "-fx-font-family: 'Segoe UI';"
-        );
-
-        row.getChildren().addAll(typeBadge, locLabel, statusBadge, dateLabel, reportedLabel);
-
-        // Hover highlight
-        row.setOnMouseEntered(e ->
-                row.setStyle(
-                        "-fx-background-color: #243d57;" +
-                                "-fx-padding: 10 22 10 22;" +
-                                "-fx-border-color: #2563eb;" +
-                                "-fx-border-width: 0 0 1 0;" +
-                                "-fx-cursor: hand;"
-                )
-        );
-        row.setOnMouseExited(e -> row.setStyle(rowStyle));
-
-        return row;
-    }
-
-    // ── Staggered slide-in + fade for each row ────────────────────────────
-    private void animateRowIn(Node node, int index) {
-        node.setOpacity(0);
-        node.setTranslateX(-20);
-
-        FadeTransition fade = new FadeTransition(Duration.millis(300), node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-
-        TranslateTransition slide = new TranslateTransition(Duration.millis(300), node);
-        slide.setFromX(-20);
-        slide.setToX(0);
-
-        ParallelTransition anim = new ParallelTransition(fade, slide);
-        anim.setDelay(Duration.millis(45L * index));  // stagger rows by 45 ms each
-        anim.play();
-    }
-
-    // ── Colour tables ─────────────────────────────────────────────────────
-
-    /** [background, foreground] for disaster type badges */
-    private String[] typeColors(String type) {
-        if (type == null) return new String[]{"#1e293b", "#94a3b8"};
-        return switch (type) {
-            case "Flood"      -> new String[]{"#172554", "#93c5fd"};
-            case "Fire"       -> new String[]{"#450a0a", "#fca5a5"};
-            case "Earthquake" -> new String[]{"#431407", "#fdba74"};
-            case "Typhoon"    -> new String[]{"#2e1065", "#c4b5fd"};
-            case "Landslide"  -> new String[]{"#292524", "#d6b86a"};
-            default           -> new String[]{"#1e293b", "#94a3b8"};
-        };
-    }
-
-    /** [background, foreground] for status badges */
-    private String[] statusColors(String status) {
-        if (status == null) return new String[]{"#1e293b", "#94a3b8"};
-        return switch (status) {
-            case "Active"     -> new String[]{"#450a0a", "#fca5a5"};
-            case "Monitoring" -> new String[]{"#422006", "#fcd34d"};
-            case "Resolved"   -> new String[]{"#052e16", "#86efac"};
-            default           -> new String[]{"#1e293b", "#94a3b8"};
-        };
-    }
-
-    /** Emoji icon representing each disaster type */
-    private String typeEmoji(String type) {
-        if (type == null) return "⚠";
-        return switch (type) {
-            case "Flood"      -> "🌊";
-            case "Fire"       -> "🔥";
-            case "Earthquake" -> "🪨";
-            case "Typhoon"    -> "🌀";
-            case "Landslide"  -> "⛰";
-            default           -> "⚠";
-        };
-    }
-
-    /** Null-safe string helper */
-    private String nvl(String value, String fallback) {
-        return (value != null && !value.isBlank()) ? value : fallback;
+        statusLabel.setText("Ready · " + all.size() + " incidents loaded");
     }
 
     // ── Sidebar navigation ────────────────────────────────────────────────
-    @FXML private void showDashboard()        { showDashboardContent(); }
+    @FXML private void showDashboard()        { refreshDashboard(); }
     @FXML private void showReportForm()       { loadView("ReportIncident.fxml"); }
     @FXML private void showIncidentList()     { loadView("IncidentListView.fxml"); }
     @FXML private void showMapView()          { loadView("MapView.fxml"); }
@@ -260,13 +136,11 @@ public class MainController {
             );
             javafx.scene.Parent root = loader.load();
             Stage stage = (Stage) contentArea.getScene().getWindow();
-
             stage.setMinWidth(480);
             stage.setMinHeight(600);
             stage.setWidth(480);
             stage.setHeight(600);
             stage.centerOnScreen();
-
             stage.setScene(new Scene(root, 480, 600));
             stage.setTitle("Disaster Report System – Login");
         } catch (Exception e) {
@@ -276,8 +150,6 @@ public class MainController {
 
     // ── Internal loader ───────────────────────────────────────────────────
     private void loadView(String fxmlFile) {
-        refreshDashboard();   // keep counters fresh on every navigation
-
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/example/disasterreport/" + fxmlFile)
@@ -295,18 +167,65 @@ public class MainController {
                 rc.setCurrentUsername(currentUser.getUsername());
             }
 
-            // Fade the incoming view in
-            view.setOpacity(0);
             contentArea.getChildren().setAll(view);
-
-            FadeTransition ft = new FadeTransition(Duration.millis(240), view);
-            ft.setFromValue(0);
-            ft.setToValue(1);
-            ft.play();
 
         } catch (Exception e) {
             e.printStackTrace();
             statusLabel.setText("Error loading view: " + fxmlFile);
         }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    /** Header cell with fixed min/max width */
+    private Label headerCell(String text, double width) {
+        Label lbl = new Label(text);
+        lbl.setMinWidth(width);
+        lbl.setMaxWidth(width);
+        lbl.setStyle("""
+            -fx-font-size: 11px;
+            -fx-font-weight: bold;
+            -fx-text-fill: #9ca3af;
+            -fx-font-family: 'Segoe UI', 'Arial', sans-serif;
+        """);
+        return lbl;
+    }
+
+    /** Data cell with fixed min/max width */
+    private Label dataCell(String text, double width) {
+        Label lbl = new Label(text);
+        lbl.setMinWidth(width);
+        lbl.setMaxWidth(width);
+        lbl.setStyle("""
+            -fx-font-size: 13px;
+            -fx-text-fill: #374151;
+            -fx-font-family: 'Segoe UI', 'Arial', sans-serif;
+        """);
+        return lbl;
+    }
+
+    /**
+     * Returns the pill badge style for a given status, matching screenshot:
+     *  Active     → red-tinted pill
+     *  Monitoring → yellow-tinted pill
+     *  Resolved   → green-tinted pill
+     */
+    private String statusBadgeStyle(String status) {
+        String bg, fg;
+        switch (status) {
+            case "Active"     -> { bg = "#ffe4e1"; fg = "#c0392b"; }
+            case "Monitoring" -> { bg = "#fef9c3"; fg = "#92400e"; }
+            case "Resolved"   -> { bg = "#dcfce7"; fg = "#15803d"; }
+            default           -> { bg = "#f3f4f6"; fg = "#6b7280"; }
+        }
+        return String.format("""
+            -fx-background-color: %s;
+            -fx-text-fill: %s;
+            -fx-font-size: 11px;
+            -fx-font-weight: bold;
+            -fx-background-radius: 20;
+            -fx-padding: 4 12 4 12;
+            -fx-font-family: 'Segoe UI', 'Arial', sans-serif;
+        """, bg, fg);
     }
 }

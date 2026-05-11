@@ -4,139 +4,155 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<!--
+    IncidentListView.fxml — Updated color scheme:
+    White background, #0f1623 header text, #e8550a primary buttons
+-->
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.disasterreport.controller.IncidentListController"
       spacing="0"
-      style="-fx-background-color: #111e2e;">
+      style="-fx-background-color: white;">
 
     <!-- Header -->
-    <VBox style="-fx-background-color: #142033;
-                 -fx-border-color: #1e3a5f;
+    <VBox style="-fx-background-color: white;
+                 -fx-border-color: #e2e5ea;
                  -fx-border-width: 0 0 1 0;
-                 -fx-padding: 20 26 18 26;">
+                 -fx-padding: 18 26 18 26;">
         <Label text="Incident List"
-               style="-fx-font-size: 20px; -fx-font-weight: bold;
-                      -fx-text-fill: #f0f9ff; -fx-font-family: 'Segoe UI';"/>
+               style="-fx-font-size: 20px;
+                      -fx-font-weight: bold;
+                      -fx-text-fill: #0f1623;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         <Label text="Browse, search, and manage all reported incidents."
-               style="-fx-font-size: 13px; -fx-text-fill: #64748b;
-                      -fx-font-family: 'Segoe UI'; -fx-padding: 4 0 0 0;"/>
+               style="-fx-font-size: 13px;
+                      -fx-text-fill: #6b7280;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </VBox>
 
-    <!-- Filter bar -->
+    <!-- Filter Bar -->
     <HBox spacing="10" alignment="CENTER_LEFT"
-          style="-fx-background-color: #1a2f45;
-                 -fx-border-color: #1e3a5f;
+          style="-fx-background-color: #fafbfc;
+                 -fx-border-color: #e2e5ea;
                  -fx-border-width: 0 0 1 0;
                  -fx-padding: 12 26 12 26;">
         <TextField fx:id="searchField"
-                   promptText="Search location or type..."
-                   prefWidth="200"
-                   style="-fx-background-color: #0f2233;
-                          -fx-border-color: #1e3a5f;
-                          -fx-border-radius: 7; -fx-background-radius: 7;
-                          -fx-text-fill: #f0f9ff;
-                          -fx-prompt-text-fill: #334155;
+                   promptText="Search by location or type..."
+                   prefWidth="220"
+                   style="-fx-background-color: white;
+                          -fx-border-color: #d1d5db;
+                          -fx-border-radius: 6;
+                          -fx-background-radius: 6;
                           -fx-padding: 8 12 8 12;
-                          -fx-font-size: 13px; -fx-font-family: 'Segoe UI';"/>
+                          -fx-font-size: 13px;
+                          -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         <ComboBox fx:id="typeFilterCombo"
                   promptText="Type"
-                  prefWidth="120"
+                  prefWidth="130"
                   onAction="#handleFilter"
-                  style="-fx-background-color: #0f2233;
-                         -fx-border-color: #1e3a5f;
-                         -fx-border-radius: 7; -fx-background-radius: 7;
-                         -fx-font-size: 13px; -fx-font-family: 'Segoe UI';"/>
+                  style="-fx-font-size: 13px;
+                         -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         <ComboBox fx:id="statusFilterCombo"
                   promptText="Status"
-                  prefWidth="120"
+                  prefWidth="130"
                   onAction="#handleFilter"
-                  style="-fx-background-color: #0f2233;
-                         -fx-border-color: #1e3a5f;
-                         -fx-border-radius: 7; -fx-background-radius: 7;
-                         -fx-font-size: 13px; -fx-font-family: 'Segoe UI';"/>
+                  style="-fx-font-size: 13px;
+                         -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <!-- Primary action: orange-red -->
         <Button text="Search" onAction="#handleSearch"
-                style="-fx-background-color: #0ea5e9;
-                       -fx-text-fill: #0d1b2a;
-                       -fx-background-radius: 7; -fx-cursor: hand;
-                       -fx-font-size: 13px; -fx-font-weight: bold;
-                       -fx-font-family: 'Segoe UI';
-                       -fx-padding: 8 16 8 16;"/>
-        <Button text="Clear" onAction="#handleClearFilters"
-                style="-fx-background-color: #0f2233;
-                       -fx-text-fill: #94a3b8;
-                       -fx-border-color: #1e3a5f;
-                       -fx-border-radius: 7; -fx-background-radius: 7;
-                       -fx-cursor: hand; -fx-font-size: 13px;
-                       -fx-font-family: 'Segoe UI';
-                       -fx-padding: 8 16 8 16;"/>
+                style="-fx-background-color: #e8550a;
+                       -fx-text-fill: white;
+                       -fx-background-radius: 6;
+                       -fx-cursor: hand;
+                       -fx-font-size: 13px;
+                       -fx-font-weight: bold;
+                       -fx-padding: 8 18 8 18;
+                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <!-- Secondary: outlined dark navy -->
+        <Button text="Clear Filters" onAction="#handleClearFilters"
+                style="-fx-background-color: white;
+                       -fx-text-fill: #374151;
+                       -fx-border-color: #d1d5db;
+                       -fx-border-radius: 6;
+                       -fx-background-radius: 6;
+                       -fx-cursor: hand;
+                       -fx-font-size: 13px;
+                       -fx-padding: 8 16 8 16;
+                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="↻  Refresh" onAction="#handleRefresh"
                 style="-fx-background-color: transparent;
-                       -fx-text-fill: #38bdf8;
-                       -fx-border-color: #38bdf8;
-                       -fx-border-radius: 7; -fx-background-radius: 7;
-                       -fx-cursor: hand; -fx-font-size: 13px;
-                       -fx-font-family: 'Segoe UI';
-                       -fx-padding: 8 14 8 14;"/>
+                       -fx-text-fill: #0f1623;
+                       -fx-border-color: #0f1623;
+                       -fx-border-radius: 6;
+                       -fx-background-radius: 6;
+                       -fx-cursor: hand;
+                       -fx-font-size: 13px;
+                       -fx-padding: 8 14 8 14;
+                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </HBox>
 
     <!-- Table -->
     <VBox VBox.vgrow="ALWAYS" spacing="0"
-          style="-fx-background-color: #111e2e; -fx-padding: 18 26 0 26;">
+          style="-fx-background-color: white; -fx-padding: 18 26 0 26;">
         <TableView fx:id="incidentTable" VBox.vgrow="ALWAYS"
-                   style="-fx-background-color: #1a2f45;
-                          -fx-border-color: #1e3a5f;
-                          -fx-border-radius: 12;
-                          -fx-background-radius: 12;
-                          -fx-table-cell-border-color: #1e3a5f;">
+                   style="-fx-border-color: #e2e5ea;
+                          -fx-border-radius: 8;
+                          -fx-background-radius: 8;
+                          -fx-font-family: 'Segoe UI', 'Arial', sans-serif;">
             <columns>
-                <TableColumn fx:id="idColumn"         text="#"           prefWidth="55"/>
-                <TableColumn fx:id="typeColumn"       text="Type"        prefWidth="120"/>
-                <TableColumn fx:id="locationColumn"   text="Location"    prefWidth="180"/>
-                <TableColumn fx:id="dateColumn"       text="Date"        prefWidth="120"/>
+                <TableColumn fx:id="idColumn"         text="#"           prefWidth="50"/>
+                <TableColumn fx:id="typeColumn"       text="Type"        prefWidth="110"/>
+                <TableColumn fx:id="locationColumn"   text="Location"    prefWidth="170"/>
+                <TableColumn fx:id="dateColumn"       text="Date"        prefWidth="110"/>
                 <TableColumn fx:id="statusColumn"     text="Status"      prefWidth="110"/>
                 <TableColumn fx:id="reportedByColumn" text="Reported By" prefWidth="140"/>
             </columns>
             <placeholder>
                 <Label text="No incidents found."
-                       style="-fx-text-fill: #334155; -fx-font-size: 13px;
-                              -fx-font-family: 'Segoe UI';"/>
+                       style="-fx-text-fill: #9ca3af;
+                              -fx-font-size: 13px;
+                              -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
             </placeholder>
         </TableView>
     </VBox>
 
-    <!-- Bottom action bar -->
+    <!-- Bottom Action Bar -->
     <HBox spacing="10" alignment="CENTER_LEFT"
-          style="-fx-background-color: #142033;
-                 -fx-border-color: #1e3a5f;
+          style="-fx-background-color: #fafbfc;
+                 -fx-border-color: #e2e5ea;
                  -fx-border-width: 1 0 0 0;
                  -fx-padding: 12 26 12 26;">
         <Label fx:id="recordCountLabel"
                text="0 incidents"
-               style="-fx-font-size: 13px; -fx-text-fill: #64748b;
-                      -fx-font-family: 'Segoe UI';"/>
+               style="-fx-font-size: 13px;
+                      -fx-text-fill: #6b7280;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="viewDetailsButton"
                 text="View Details"
                 onAction="#handleViewDetails"
-                style="-fx-background-color: #0f2233;
-                       -fx-text-fill: #94a3b8;
-                       -fx-border-color: #1e3a5f;
-                       -fx-border-radius: 7; -fx-background-radius: 7;
-                       -fx-cursor: hand; -fx-font-size: 13px;
-                       -fx-font-family: 'Segoe UI';
-                       -fx-padding: 8 16 8 16;"/>
+                style="-fx-background-color: white;
+                       -fx-text-fill: #374151;
+                       -fx-border-color: #d1d5db;
+                       -fx-border-radius: 6;
+                       -fx-background-radius: 6;
+                       -fx-cursor: hand;
+                       -fx-font-size: 13px;
+                       -fx-padding: 8 18 8 18;
+                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <!-- Primary CTA — orange-red -->
         <Button fx:id="updateStatusButton"
-                text="Mark Resolved  ✓"
+                text="Update Status"
                 onAction="#handleUpdateStatus"
-                style="-fx-background-color: #052e16;
-                       -fx-text-fill: #86efac;
-                       -fx-border-color: #14532d;
-                       -fx-border-radius: 7; -fx-background-radius: 7;
-                       -fx-cursor: hand; -fx-font-size: 13px;
-                       -fx-font-weight: bold; -fx-font-family: 'Segoe UI';
-                       -fx-padding: 8 16 8 16;"/>
+                style="-fx-background-color: #e8550a;
+                       -fx-text-fill: white;
+                       -fx-background-radius: 6;
+                       -fx-cursor: hand;
+                       -fx-font-size: 13px;
+                       -fx-font-weight: bold;
+                       -fx-padding: 8 18 8 18;
+                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </HBox>
 
 </VBox>

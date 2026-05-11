@@ -3,274 +3,246 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
 
+<!--
+    MainView.fxml — Updated color scheme to match screenshot:
+    • Sidebar:  deep navy #0f1623 with white text
+    • Active nav button: orange-red pill #e8550a
+    • Stats cards: white with colored accent numbers
+    • Header: #0f1623 navy bar
+    • Content background: white
+    • Status badges: colored pill labels (handled by controller)
+-->
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.disasterreport.controller.MainController"
       spacing="0"
-      style="-fx-background-color: #0d1b2a;">
+      style="-fx-background-color: #f4f5f7;">
 
     <!-- ── Top Navigation Bar ── -->
     <HBox alignment="CENTER_LEFT"
-          style="-fx-background-color: linear-gradient(to right, #0d1b2a, #1a3a5c);
-                 -fx-padding: 0 28 0 0;
-                 -fx-border-color: #1e3a5f;
-                 -fx-border-width: 0 0 1 0;"
-          spacing="0" minHeight="64" maxHeight="64">
-
-        <!-- Brand block with left accent bar -->
-        <HBox alignment="CENTER_LEFT" spacing="14"
-              style="-fx-padding: 0 28 0 0; -fx-min-width: 220; -fx-max-width: 220;">
-            <!-- Accent stripe -->
-            <Rectangle width="4" height="64"
-                       style="-fx-fill: linear-gradient(to bottom, #38bdf8, #0ea5e9);"/>
-            <VBox spacing="2" style="-fx-padding: 0 0 0 4;">
-                <Label text="DISASTER"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold;
-                              -fx-text-fill: #f0f9ff; -fx-font-family: 'Segoe UI';"/>
-                <Label text="ALERT SYSTEM"
-                       style="-fx-font-size: 10px; -fx-font-weight: bold;
-                              -fx-text-fill: #38bdf8; -fx-letter-spacing: 2;
-                              -fx-font-family: 'Segoe UI';"/>
-            </VBox>
-        </HBox>
-
-        <!-- Spacer -->
+          style="-fx-background-color: #0f1623; -fx-padding: 15 28 15 28;"
+          spacing="12">
+        <Label text="⚠  Disaster Report System"
+               style="-fx-text-fill: white;
+                      -fx-font-size: 17px;
+                      -fx-font-weight: bold;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         <Region HBox.hgrow="ALWAYS"/>
-
-        <!-- User info + logout -->
-        <HBox alignment="CENTER" spacing="16" style="-fx-padding: 0 0 0 0;">
-            <Label fx:id="loggedInUserLabel"
-                   text="Logged in as: User"
-                   style="-fx-text-fill: #94a3b8; -fx-font-size: 13px;
-                          -fx-font-family: 'Segoe UI';"/>
-            <Button text="Log Out"
-                    onAction="#handleLogout"
-                    style="-fx-background-color: transparent;
-                           -fx-text-fill: #38bdf8;
-                           -fx-border-color: #38bdf8;
-                           -fx-border-radius: 6;
-                           -fx-background-radius: 6;
-                           -fx-cursor: hand;
-                           -fx-font-size: 12px;
-                           -fx-font-family: 'Segoe UI';
-                           -fx-padding: 5 14 5 14;"/>
-        </HBox>
+        <Label fx:id="loggedInUserLabel"
+               text="Logged in as: User"
+               style="-fx-text-fill: #8fa3bc;
+                      -fx-font-size: 13px;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <Button text="Log Out"
+                onAction="#handleLogout"
+                style="-fx-background-color: transparent;
+                       -fx-text-fill: white;
+                       -fx-border-color: rgba(255,255,255,0.4);
+                       -fx-border-radius: 5;
+                       -fx-background-radius: 5;
+                       -fx-cursor: hand;
+                       -fx-font-size: 12px;
+                       -fx-padding: 5 14 5 14;
+                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </HBox>
 
     <!-- ── Body: Sidebar + Content ── -->
     <HBox VBox.vgrow="ALWAYS">
 
-        <!-- ── Sidebar ── -->
+        <!-- ── Sidebar — deep navy matching screenshot ── -->
         <VBox spacing="4"
-              style="-fx-background-color: #0f2233;
-                     -fx-border-color: #1e3a5f;
-                     -fx-border-width: 0 1 0 0;"
-              minWidth="220" maxWidth="220">
-            <padding><Insets top="24" right="12" bottom="24" left="12"/></padding>
+              style="-fx-background-color: #0f1623;"
+              minWidth="195" maxWidth="195">
+            <padding><Insets top="22" right="14" bottom="22" left="14"/></padding>
 
             <Label text="NAVIGATION"
-                   style="-fx-font-size: 10px; -fx-font-weight: bold;
-                          -fx-text-fill: #38bdf8; -fx-padding: 0 0 10 8;
-                          -fx-font-family: 'Segoe UI'; -fx-letter-spacing: 1.5;"/>
+                   style="-fx-font-size: 10px;
+                          -fx-font-weight: bold;
+                          -fx-text-fill: #4a6080;
+                          -fx-padding: 0 0 8 6;
+                          -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
 
-            <Button text="⬛  Dashboard" maxWidth="Infinity" onAction="#showDashboard"
-                    style="-fx-background-color: #1e3a5f; -fx-text-fill: #f0f9ff;
-                           -fx-alignment: CENTER_LEFT; -fx-font-size: 13px;
-                           -fx-font-family: 'Segoe UI'; -fx-font-weight: bold;
-                           -fx-background-radius: 8; -fx-cursor: hand;
-                           -fx-padding: 11 14 11 14;"/>
-            <Button text="📋  Report Incident" maxWidth="Infinity" onAction="#showReportForm"
-                    style="-fx-background-color: transparent; -fx-text-fill: #94a3b8;
-                           -fx-alignment: CENTER_LEFT; -fx-font-size: 13px;
-                           -fx-font-family: 'Segoe UI';
-                           -fx-background-radius: 8; -fx-cursor: hand;
-                           -fx-padding: 11 14 11 14;"/>
-            <Button text="📄  Incident List" maxWidth="Infinity" onAction="#showIncidentList"
-                    style="-fx-background-color: transparent; -fx-text-fill: #94a3b8;
-                           -fx-alignment: CENTER_LEFT; -fx-font-size: 13px;
-                           -fx-font-family: 'Segoe UI';
-                           -fx-background-radius: 8; -fx-cursor: hand;
-                           -fx-padding: 11 14 11 14;"/>
-            <Button text="🗺  Map View" maxWidth="Infinity" onAction="#showMapView"
-                    style="-fx-background-color: transparent; -fx-text-fill: #94a3b8;
-                           -fx-alignment: CENTER_LEFT; -fx-font-size: 13px;
-                           -fx-font-family: 'Segoe UI';
-                           -fx-background-radius: 8; -fx-cursor: hand;
-                           -fx-padding: 11 14 11 14;"/>
-            <Button text="📊  Generate Report" maxWidth="Infinity" onAction="#showReportGenerator"
-                    style="-fx-background-color: transparent; -fx-text-fill: #94a3b8;
-                           -fx-alignment: CENTER_LEFT; -fx-font-size: 13px;
-                           -fx-font-family: 'Segoe UI';
-                           -fx-background-radius: 8; -fx-cursor: hand;
-                           -fx-padding: 11 14 11 14;"/>
-
-            <Region VBox.vgrow="ALWAYS"/>
-
-            <!-- Version tag at bottom of sidebar -->
-            <Label text="v1.0.0  •  DAS"
-                   style="-fx-font-size: 11px; -fx-text-fill: #2d4a6b;
-                          -fx-padding: 0 0 0 8; -fx-font-family: 'Segoe UI';"/>
+            <!--
+                Active state uses orange-red pill background (#e8550a).
+                Inactive: transparent with dimmed white text.
+                Controllers can swap styles programmatically; here Dashboard
+                starts active to match the screenshot.
+            -->
+            <Button text="Dashboard"
+                    maxWidth="Infinity"
+                    onAction="#showDashboard"
+                    style="-fx-background-color: #e8550a;
+                           -fx-text-fill: white;
+                           -fx-alignment: CENTER_LEFT;
+                           -fx-font-size: 13px;
+                           -fx-font-weight: bold;
+                           -fx-background-radius: 7;
+                           -fx-cursor: hand;
+                           -fx-padding: 10 14 10 14;
+                           -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            <Button text="Report Incident"
+                    maxWidth="Infinity"
+                    onAction="#showReportForm"
+                    style="-fx-background-color: transparent;
+                           -fx-text-fill: #b0c4d8;
+                           -fx-alignment: CENTER_LEFT;
+                           -fx-font-size: 13px;
+                           -fx-background-radius: 7;
+                           -fx-cursor: hand;
+                           -fx-padding: 10 14 10 14;
+                           -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            <Button text="Incident List"
+                    maxWidth="Infinity"
+                    onAction="#showIncidentList"
+                    style="-fx-background-color: transparent;
+                           -fx-text-fill: #b0c4d8;
+                           -fx-alignment: CENTER_LEFT;
+                           -fx-font-size: 13px;
+                           -fx-background-radius: 7;
+                           -fx-cursor: hand;
+                           -fx-padding: 10 14 10 14;
+                           -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            <Button text="Map View"
+                    maxWidth="Infinity"
+                    onAction="#showMapView"
+                    style="-fx-background-color: transparent;
+                           -fx-text-fill: #b0c4d8;
+                           -fx-alignment: CENTER_LEFT;
+                           -fx-font-size: 13px;
+                           -fx-background-radius: 7;
+                           -fx-cursor: hand;
+                           -fx-padding: 10 14 10 14;
+                           -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            <Button text="Generate Report"
+                    maxWidth="Infinity"
+                    onAction="#showReportGenerator"
+                    style="-fx-background-color: transparent;
+                           -fx-text-fill: #b0c4d8;
+                           -fx-alignment: CENTER_LEFT;
+                           -fx-font-size: 13px;
+                           -fx-background-radius: 7;
+                           -fx-cursor: hand;
+                           -fx-padding: 10 14 10 14;
+                           -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
         </VBox>
 
-        <!-- ── Main Content ── -->
-        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"
-                    style="-fx-background-color: #111e2e; -fx-background: #111e2e;
-                           -fx-border-color: transparent;">
-            <VBox spacing="20"
-                  style="-fx-background-color: #111e2e; -fx-padding: 28 28 28 28;">
+        <!-- ── Main Content Area — white ── -->
+        <VBox HBox.hgrow="ALWAYS" spacing="18"
+              style="-fx-background-color: white;">
+            <padding><Insets top="26" right="28" bottom="26" left="28"/></padding>
 
-                <!-- Page heading -->
-                <VBox spacing="4">
-                    <Label text="Command Dashboard"
-                           style="-fx-font-size: 22px; -fx-font-weight: bold;
-                                  -fx-text-fill: #f0f9ff; -fx-font-family: 'Segoe UI';"/>
-                    <Label text="Live overview of all reported disaster incidents."
-                           style="-fx-font-size: 13px; -fx-text-fill: #64748b;
-                                  -fx-font-family: 'Segoe UI';"/>
+            <!-- Dashboard title -->
+            <Label text="Dashboard"
+                   style="-fx-font-size: 20px;
+                          -fx-font-weight: bold;
+                          -fx-text-fill: #0f1623;
+                          -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+
+            <!-- ── Stats Cards ── -->
+            <HBox spacing="16">
+
+                <!-- Total Reports -->
+                <VBox spacing="6"
+                      style="-fx-background-color: white;
+                             -fx-background-radius: 8;
+                             -fx-border-color: #e2e5ea;
+                             -fx-border-radius: 8;
+                             -fx-border-width: 1;
+                             -fx-padding: 20;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);"
+                      HBox.hgrow="ALWAYS">
+                    <Label text="Total Reports"
+                           style="-fx-font-size: 12px;
+                                  -fx-text-fill: #6b7280;
+                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                    <Label fx:id="totalIncidentsLabel" text="0"
+                           style="-fx-font-size: 30px;
+                                  -fx-font-weight: bold;
+                                  -fx-text-fill: #0f1623;
+                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                 </VBox>
 
-                <!-- ── Stat Cards ── -->
-                <HBox spacing="16">
-                    <!-- Total -->
-                    <VBox spacing="6" HBox.hgrow="ALWAYS"
-                          style="-fx-background-color: #1a2f45;
-                                 -fx-background-radius: 14;
-                                 -fx-border-color: #1e3a5f;
-                                 -fx-border-radius: 14;
-                                 -fx-border-width: 1;
-                                 -fx-padding: 20 22 20 22;">
-                        <Label text="TOTAL REPORTS"
-                               style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #38bdf8; -fx-letter-spacing: 1.2;
-                                      -fx-font-family: 'Segoe UI';"/>
-                        <Label fx:id="totalIncidentsLabel" text="0"
-                               style="-fx-font-size: 36px; -fx-font-weight: bold;
-                                      -fx-text-fill: #f0f9ff; -fx-font-family: 'Segoe UI';"/>
-                        <Label text="All time incidents"
-                               style="-fx-font-size: 12px; -fx-text-fill: #64748b;
-                                      -fx-font-family: 'Segoe UI';"/>
-                    </VBox>
-
-                    <!-- Active -->
-                    <VBox spacing="6" HBox.hgrow="ALWAYS"
-                          style="-fx-background-color: #2d1515;
-                                 -fx-background-radius: 14;
-                                 -fx-border-color: #7f1d1d;
-                                 -fx-border-radius: 14;
-                                 -fx-border-width: 1;
-                                 -fx-padding: 20 22 20 22;">
-                        <Label text="ACTIVE / MONITORING"
-                               style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #f87171; -fx-letter-spacing: 1.2;
-                                      -fx-font-family: 'Segoe UI';"/>
-                        <Label fx:id="activeIncidentsLabel" text="0"
-                               style="-fx-font-size: 36px; -fx-font-weight: bold;
-                                      -fx-text-fill: #fca5a5; -fx-font-family: 'Segoe UI';"/>
-                        <Label text="Require attention"
-                               style="-fx-font-size: 12px; -fx-text-fill: #64748b;
-                                      -fx-font-family: 'Segoe UI';"/>
-                    </VBox>
-
-                    <!-- Resolved -->
-                    <VBox spacing="6" HBox.hgrow="ALWAYS"
-                          style="-fx-background-color: #0f2a1a;
-                                 -fx-background-radius: 14;
-                                 -fx-border-color: #14532d;
-                                 -fx-border-radius: 14;
-                                 -fx-border-width: 1;
-                                 -fx-padding: 20 22 20 22;">
-                        <Label text="RESOLVED"
-                               style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #4ade80; -fx-letter-spacing: 1.2;
-                                      -fx-font-family: 'Segoe UI';"/>
-                        <Label fx:id="resolvedIncidentsLabel" text="0"
-                               style="-fx-font-size: 36px; -fx-font-weight: bold;
-                                      -fx-text-fill: #86efac; -fx-font-family: 'Segoe UI';"/>
-                        <Label text="Incidents closed"
-                               style="-fx-font-size: 12px; -fx-text-fill: #64748b;
-                                      -fx-font-family: 'Segoe UI';"/>
-                    </VBox>
-                </HBox>
-
-                <!-- ── Recent Incidents Panel ── -->
-                <VBox spacing="0"
-                      style="-fx-background-color: #1a2f45;
-                             -fx-background-radius: 14;
-                             -fx-border-color: #1e3a5f;
-                             -fx-border-radius: 14;
-                             -fx-border-width: 1;">
-
-                    <!-- Panel header -->
-                    <HBox alignment="CENTER_LEFT" spacing="10"
-                          style="-fx-padding: 18 22 16 22;
-                                 -fx-border-color: #1e3a5f;
-                                 -fx-border-width: 0 0 1 0;">
-                        <Label text="●"
-                               style="-fx-text-fill: #f87171; -fx-font-size: 10px;"/>
-                        <Label text="RECENT INCIDENTS"
-                               style="-fx-font-size: 12px; -fx-font-weight: bold;
-                                      -fx-text-fill: #94a3b8; -fx-letter-spacing: 1.5;
-                                      -fx-font-family: 'Segoe UI';"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Label text="Latest 10 entries"
-                               style="-fx-font-size: 11px; -fx-text-fill: #334155;
-                                      -fx-font-family: 'Segoe UI';"/>
-                    </HBox>
-
-                    <!-- Column headers -->
-                    <HBox spacing="0"
-                          style="-fx-padding: 10 22 10 22;
-                                 -fx-background-color: #142033;
-                                 -fx-border-color: #1e3a5f;
-                                 -fx-border-width: 0 0 1 0;">
-                        <Label text="TYPE" minWidth="130"
-                               style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #475569; -fx-letter-spacing: 1;
-                                      -fx-font-family: 'Segoe UI';"/>
-                        <Label text="LOCATION" minWidth="200"
-                               style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #475569; -fx-letter-spacing: 1;
-                                      -fx-font-family: 'Segoe UI';"/>
-                        <Label text="STATUS" minWidth="120"
-                               style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #475569; -fx-letter-spacing: 1;
-                                      -fx-font-family: 'Segoe UI';"/>
-                        <Label text="DATE" minWidth="110"
-                               style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #475569; -fx-letter-spacing: 1;
-                                      -fx-font-family: 'Segoe UI';"/>
-                        <Label text="REPORTED BY"
-                               style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #475569; -fx-letter-spacing: 1;
-                                      -fx-font-family: 'Segoe UI';"/>
-                    </HBox>
-
-                    <!-- Dynamic rows injected by MainController -->
-                    <VBox fx:id="contentArea" spacing="0"
-                          style="-fx-padding: 8 0 8 0;">
-                        <Label text="Loading incidents…"
-                               style="-fx-font-size: 13px; -fx-text-fill: #334155;
-                                      -fx-padding: 18 22 18 22;
-                                      -fx-font-family: 'Segoe UI';"/>
-                    </VBox>
+                <!-- Active Incidents — red number matching screenshot -->
+                <VBox spacing="6"
+                      style="-fx-background-color: white;
+                             -fx-background-radius: 8;
+                             -fx-border-color: #e2e5ea;
+                             -fx-border-radius: 8;
+                             -fx-border-width: 1;
+                             -fx-padding: 20;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);"
+                      HBox.hgrow="ALWAYS">
+                    <Label text="Active Incidents"
+                           style="-fx-font-size: 12px;
+                                  -fx-text-fill: #6b7280;
+                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                    <Label fx:id="activeIncidentsLabel" text="0"
+                           style="-fx-font-size: 30px;
+                                  -fx-font-weight: bold;
+                                  -fx-text-fill: #e8550a;
+                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                 </VBox>
 
+                <!-- Resolved — green matching screenshot -->
+                <VBox spacing="6"
+                      style="-fx-background-color: white;
+                             -fx-background-radius: 8;
+                             -fx-border-color: #e2e5ea;
+                             -fx-border-radius: 8;
+                             -fx-border-width: 1;
+                             -fx-padding: 20;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);"
+                      HBox.hgrow="ALWAYS">
+                    <Label text="Resolved"
+                           style="-fx-font-size: 12px;
+                                  -fx-text-fill: #6b7280;
+                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                    <Label fx:id="resolvedIncidentsLabel" text="0"
+                           style="-fx-font-size: 30px;
+                                  -fx-font-weight: bold;
+                                  -fx-text-fill: #16a34a;
+                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                </VBox>
+            </HBox>
+
+            <!-- ── Recent Incidents card ── -->
+            <VBox spacing="10"
+                  style="-fx-background-color: white;
+                         -fx-background-radius: 8;
+                         -fx-border-color: #e2e5ea;
+                         -fx-border-radius: 8;
+                         -fx-border-width: 1;
+                         -fx-padding: 22;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);"
+                  VBox.vgrow="ALWAYS">
+                <Label text="Recent Incidents"
+                       style="-fx-font-size: 15px;
+                              -fx-font-weight: bold;
+                              -fx-text-fill: #0f1623;
+                              -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+
+                <!-- Dynamic content loaded by controller -->
+                <VBox fx:id="contentArea" VBox.vgrow="ALWAYS" spacing="8">
+                    <Label text="No incidents reported yet."
+                           style="-fx-font-size: 13px;
+                                  -fx-text-fill: #9ca3af;
+                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                </VBox>
             </VBox>
-        </ScrollPane>
+
+        </VBox>
     </HBox>
 
     <!-- ── Status Bar ── -->
-    <HBox style="-fx-background-color: #0a1628;
-                 -fx-border-color: #1e3a5f;
+    <HBox style="-fx-background-color: #f0f2f5;
+                 -fx-border-color: #e2e5ea;
                  -fx-border-width: 1 0 0 0;
-                 -fx-padding: 5 16 5 16;"
-          alignment="CENTER_LEFT" spacing="8">
-        <Label text="●" style="-fx-text-fill: #4ade80; -fx-font-size: 9px;"/>
-        <Label fx:id="statusLabel" text="System Ready"
-               style="-fx-font-size: 11px; -fx-text-fill: #475569;
-                      -fx-font-family: 'Segoe UI';"/>
+                 -fx-padding: 5 14 5 14;">
+        <Label fx:id="statusLabel" text="Ready"
+               style="-fx-font-size: 11px;
+                      -fx-text-fill: #6b7280;
+                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </HBox>
 
 </VBox>
