@@ -77,8 +77,11 @@ public class MainController {
             row.setAlignment(Pos.CENTER_LEFT);
             row.setStyle("-fx-background-color: white; -fx-border-color: #f1f3f5; -fx-border-width: 0 0 1 0; -fx-padding: 10 0;");
 
-            Label sev = new Label(inc.getSeverity().toUpperCase()); sev.setMinWidth(85); sev.setAlignment(Pos.CENTER); sev.setStyle(severityBadgeStyle(inc.getSeverity()));
-            Label sts = new Label(inc.getStatus()); sts.setMinWidth(85); sts.setAlignment(Pos.CENTER); sts.setStyle(statusBadgeStyle(inc.getStatus()));
+            Label sev = new Label(inc.getSeverity() != null ? inc.getSeverity().toUpperCase() : "MEDIUM");
+            sev.setMinWidth(80); sev.setMaxWidth(80); sev.setAlignment(Pos.CENTER); sev.setStyle(severityBadgeStyle(inc.getSeverity()));
+
+            Label sts = new Label(inc.getStatus());
+            sts.setMinWidth(80); sts.setMaxWidth(80); sts.setAlignment(Pos.CENTER); sts.setStyle(statusBadgeStyle(inc.getStatus()));
 
             row.getChildren().addAll(dataCell("#"+inc.getIncidentID(), 40), dataCell(inc.getType(), 100), dataCell(inc.getLocation(), 200), sev, sts);
             card.getChildren().add(row);
@@ -96,8 +99,39 @@ public class MainController {
     @FXML private void showMapView() { setActiveNavButton(btnMapView); loadView("MapView.fxml"); }
     @FXML private void showManageUsers() { setActiveNavButton(btnManageUsers); loadView("Manageusersview.fxml"); }
     @FXML private void showAdminRequests() { setActiveNavButton(btnAdminRequests); loadView("AdminRequestsView.fxml"); }
-    @FXML private void handleRequestRole() { /* same logic */ }
-    @FXML private void handleLogout() { /* same logic */ }
+
+    @FXML
+    private void handleRequestRole() {
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("responder", "responder", "admin");
+        dialog.setTitle("Request Role Change");
+        dialog.setHeaderText("Request a role upgrade");
+        dialog.setContentText("Select the role you are applying for:");
+
+        dialog.showAndWait().ifPresent(role -> {
+            DatabaseManager.getInstance().addRequest(currentUser.getUsername(), "ROLE_CHANGE", role);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Success");
+            alert.setHeaderText(null);
+            alert.setContentText("Your request to become a " + role + " has been sent to the admin.");
+            alert.showAndWait();
+        });
+    }
+
+    @FXML
+    private void handleLogout() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/disasterreport/LoginView.fxml"));
+            javafx.scene.Parent root = loader.load();
+            Stage stage = (Stage) contentArea.getScene().getWindow();
+            stage.setMinWidth(480); stage.setMinHeight(600);
+            stage.setWidth(480); stage.setHeight(600);
+            stage.centerOnScreen();
+            stage.setScene(new Scene(root, 480, 600));
+            stage.setTitle("Disaster Report System – Login");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void loadView(String fxml) {
         try {
@@ -132,17 +166,17 @@ public class MainController {
             case "CRITICAL" -> { bg = "#fee2e2"; fg = "#b91c1c"; }
             default -> { bg = "#f3f4f6"; fg = "#4b5563"; }
         }
-        return String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-size: 10px; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 3 8;", bg, fg);
+        return String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 10;", bg, fg);
     }
 
     private String statusBadgeStyle(String s) {
         String bg, fg;
-        switch (s) {
+        switch (s != null ? s : "Monitoring") {
             case "Active" -> { bg = "#ffe4e1"; fg = "#c0392b"; }
             case "Monitoring" -> { bg = "#fef9c3"; fg = "#92400e"; }
             case "Resolved" -> { bg = "#dcfce7"; fg = "#15803d"; }
             default -> { bg = "#f3f4f6"; fg = "#6b7280"; }
         }
-        return String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-size: 10px; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 3 10;", bg, fg);
+        return String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 4 10;", bg, fg);
     }
 }

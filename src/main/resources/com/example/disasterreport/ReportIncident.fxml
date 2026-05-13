@@ -8,6 +8,7 @@
     ReportIncident.fxml — Updated color scheme:
     White background, #0f1623 text, #e8550a primary button
 -->
+<?import javafx.scene.web.WebView?>
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.disasterreport.controller.ReportIncidentController"
@@ -113,6 +114,13 @@
                                            -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                     </VBox>
                 </HBox>
+
+                <StackPane prefHeight="350" style="-fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6;">
+                    <WebView fx:id="reportMapWebView" />
+                    <Label fx:id="geocodingLabel" text="Fetching address..." visible="false" managed="false" StackPane.alignment="BOTTOM_LEFT" style="-fx-background-color: rgba(15, 22, 35, 0.8); -fx-text-fill: white; -fx-padding: 4 8; -fx-background-radius: 4; -fx-font-size: 11px;">
+                        <StackPane.margin><Insets bottom="10" left="10"/></StackPane.margin>
+                    </Label>
+                </StackPane>
 
                 <!-- Row 3: Latitude + Longitude -->
                 <HBox spacing="16">

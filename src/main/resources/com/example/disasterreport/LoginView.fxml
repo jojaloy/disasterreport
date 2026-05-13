@@ -122,6 +122,7 @@
 
             <Button fx:id="loginButton"
                     text="Log In"
+                    defaultButton="true"
                     maxWidth="Infinity"
                     onAction="#handleLogin"
                     style="-fx-background-color: #e8550a;
