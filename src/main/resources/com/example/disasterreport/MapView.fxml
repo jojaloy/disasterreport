@@ -9,79 +9,114 @@
       fx:controller="com.example.disasterreport.controller.MapViewController"
       spacing="0" style="-fx-background-color: white;">
 
-    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #fafbfc; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 11 26 11 26;">
-        <TextField fx:id="searchField" promptText="Search location..." prefWidth="180" style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-font-size: 13px;"/>
+    <!-- Filter Bar -->
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-background-color: #fafbfc; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 11 26 11 26;">
+        <TextField fx:id="searchField" promptText="Search location..." prefWidth="180"
+                   style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-font-size: 13px;"/>
         <ComboBox fx:id="typeFilterCombo" promptText="Type" prefWidth="110" onAction="#handleFilter"/>
         <ComboBox fx:id="statusFilterCombo" promptText="Status" prefWidth="110" onAction="#handleFilter"/>
-        <Button text="Clear" onAction="#handleClearFilters" style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-cursor: hand;"/>
-        <Button text="↻ Refresh" onAction="#handleRefresh" style="-fx-background-color: transparent; -fx-border-color: #0f1623; -fx-cursor: hand;"/>
+        <Button text="Clear" onAction="#handleClearFilters"
+                style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 6 12;"/>
+        <Button text="↻ Refresh" onAction="#handleRefresh"
+                style="-fx-background-color: transparent; -fx-border-color: #0f1623; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 6 12;"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="markerCountLabel" text="0 incidents" style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
+        <Label fx:id="markerCountLabel" text="0 incidents"
+               style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
     </HBox>
 
+    <!-- Main Content: Table + Map -->
     <HBox VBox.vgrow="ALWAYS">
-        <VBox prefWidth="350" minWidth="350" maxWidth="350" style="-fx-border-color: #e2e5ea; -fx-border-width: 0 1 0 0;">
-            <TableView fx:id="incidentTable" VBox.vgrow="ALWAYS">
+
+        <!-- Left: Incident Table -->
+        <VBox prefWidth="310" minWidth="310" maxWidth="310"
+              style="-fx-border-color: #e2e5ea; -fx-border-width: 0 1 0 0;">
+            <TableView fx:id="incidentTable" VBox.vgrow="ALWAYS"
+                       style="-fx-border-width: 0; -fx-background-color: white;">
                 <columns>
-                    <TableColumn fx:id="idColumn" text="#" prefWidth="40"/>
-                    <TableColumn fx:id="typeColumn" text="Type" prefWidth="90"/>
-                    <TableColumn fx:id="locationColumn" text="Location" prefWidth="120"/>
-                    <TableColumn fx:id="statusColumn" text="Status" prefWidth="85"/>
+                    <TableColumn fx:id="idColumn"       text="#"        prefWidth="40"/>
+                    <TableColumn fx:id="typeColumn"     text="Type"     prefWidth="100"/>
+                    <TableColumn fx:id="locationColumn" text="Location" prefWidth="110"/>
+                    <TableColumn fx:id="statusColumn"   text="Status"   prefWidth="80"/>
                 </columns>
+                <placeholder>
+                    <Label text="No incidents." style="-fx-text-fill: #9ca3af; -fx-font-size: 13px;"/>
+                </placeholder>
             </TableView>
         </VBox>
 
+        <!-- Right: Map with floating details panel (upper-right) -->
         <StackPane HBox.hgrow="ALWAYS">
-            <WebView fx:id="mapWebView" />
+            <WebView fx:id="mapWebView"/>
 
-            <VBox fx:id="detailsPanel" maxWidth="380" maxHeight="450" spacing="12"
+            <!-- Floating Details Panel — upper right, compact -->
+            <VBox fx:id="detailsPanel"
+                  maxWidth="300" spacing="8"
                   visible="false" managed="true"
-                  StackPane.alignment="BOTTOM_RIGHT"
-                  style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e5ea; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 22; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);">
-                <StackPane.margin><Insets bottom="20" right="20"/></StackPane.margin>
+                  StackPane.alignment="TOP_RIGHT"
+                  style="-fx-background-color: white;
+                         -fx-background-radius: 10;
+                         -fx-border-color: #e2e5ea;
+                         -fx-border-radius: 10;
+                         -fx-border-width: 1;
+                         -fx-padding: 14;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 14, 0, 0, 4);">
+                <StackPane.margin><Insets top="16" right="16"/></StackPane.margin>
 
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="Incident Details" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f1623;"/>
+                <!-- Header row -->
+                <HBox alignment="CENTER_LEFT" spacing="6">
+                    <Label fx:id="detIdLabel" text="Incident #"
+                           style="-fx-font-size: 11px; -fx-text-fill: #9ca3af; -fx-font-weight: bold;"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button text="✕" onAction="#closeDetailsPanel" style="-fx-background-color: transparent; -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                    <Button text="✕" onAction="#closeDetailsPanel"
+                            style="-fx-background-color: #f3f4f6; -fx-text-fill: #6b7280;
+                                   -fx-background-radius: 50; -fx-cursor: hand;
+                                   -fx-font-size: 11px; -fx-padding: 2 6; -fx-font-weight: bold;"/>
                 </HBox>
 
-                <Label fx:id="detIdLabel" text="ID: #" style="-fx-font-size: 12px; -fx-text-fill: #6b7280; -fx-margin-top: -10;"/>
+                <!-- Type + Badges row -->
+                <HBox alignment="CENTER_LEFT" spacing="6">
+                    <Label fx:id="detTypeLabel" text="Type"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0f1623;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="detStatusBadge" text="Status"
+                           style="-fx-padding: 2 8; -fx-background-radius: 4; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <Label fx:id="detSeverityBadge" text="Sev"
+                           style="-fx-padding: 2 8; -fx-background-radius: 4; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                </HBox>
 
-                <HBox spacing="8">
-                    <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label text="TYPE" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                        <Label fx:id="detTypeLabel" text="Type" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <!-- Location -->
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Label text="📍" style="-fx-font-size: 11px;"/>
+                    <Label fx:id="detLocationLabel" text="Location" wrapText="true"
+                           style="-fx-font-size: 12px; -fx-text-fill: #374151;" maxWidth="230"/>
+                </HBox>
+
+                <!-- Date + Reporter row -->
+                <HBox spacing="12">
+                    <VBox spacing="2">
+                        <Label text="DATE" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
+                        <Label fx:id="detDateLabel" text="—" style="-fx-font-size: 12px; -fx-text-fill: #374151;"/>
                     </VBox>
-                    <VBox spacing="4" alignment="TOP_RIGHT">
-                        <Label text="REPORTED BY" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                        <Label fx:id="detReporterLabel" text="User" style="-fx-font-size: 13px;"/>
+                    <VBox spacing="2">
+                        <Label text="BY" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
+                        <Label fx:id="detReporterLabel" text="—" style="-fx-font-size: 12px; -fx-text-fill: #374151;"/>
                     </VBox>
                 </HBox>
 
-                <HBox spacing="8">
-                    <Label fx:id="detStatusBadge" text="Status" style="-fx-padding: 3 8; -fx-background-radius: 4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-                    <Label fx:id="detSeverityBadge" text="Severity" style="-fx-padding: 3 8; -fx-background-radius: 4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-                </HBox>
-
-                <VBox spacing="4">
-                    <Label text="LOCATION" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                    <Label fx:id="detLocationLabel" text="Location" wrapText="true" style="-fx-font-size: 13px;"/>
+                <!-- Description (short, clipped) -->
+                <VBox spacing="2">
+                    <Label text="DESCRIPTION" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
+                    <Label fx:id="detDescLabel" text="—" wrapText="true" maxHeight="54"
+                           style="-fx-font-size: 12px; -fx-text-fill: #4b5563; -fx-line-spacing: 2;"/>
                 </VBox>
 
-                <VBox spacing="4">
-                    <Label text="DATE" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                    <Label fx:id="detDateLabel" text="Date" style="-fx-font-size: 13px;"/>
-                </VBox>
-
-                <VBox spacing="4" VBox.vgrow="ALWAYS">
-                    <Label text="DESCRIPTION" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                    <ScrollPane fitToWidth="true" style="-fx-background: white; -fx-background-color: white; -fx-padding: 0;">
-                        <Label fx:id="detDescLabel" text="..." wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #374151; -fx-line-spacing: 3;"/>
-                    </ScrollPane>
-                </VBox>
-
-                <Button fx:id="btnUpdateStatus" text="Update Status" maxWidth="Infinity" onAction="#handleUpdateStatus" style="-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8;"/>
+                <!-- Update Status button -->
+                <Button fx:id="btnUpdateStatus" text="Update Status" maxWidth="Infinity"
+                        onAction="#handleUpdateStatus"
+                        style="-fx-background-color: #e8550a; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 7;
+                               -fx-background-radius: 6; -fx-font-size: 12px;"/>
             </VBox>
         </StackPane>
     </HBox>
