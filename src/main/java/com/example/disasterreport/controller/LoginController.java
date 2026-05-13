@@ -5,16 +5,62 @@ import com.example.disasterreport.model.User;
 import com.example.disasterreport.util.DatabaseManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-public class LoginController {
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class LoginController implements Initializable {
 
     @FXML private TextField     usernameField;
     @FXML private PasswordField passwordField;
+    @FXML private TextField     passwordTextField;
+    @FXML private CheckBox      showPasswordCheckBox;
     @FXML private Label         errorLabel;
     @FXML private Button        loginButton;
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        // Bind the text properties so both fields share the exact same text automatically
+        passwordTextField.textProperty().bindBidirectional(passwordField.textProperty());
+    }
+
+    @FXML
+    private void togglePasswordVisibility() {
+        if (showPasswordCheckBox.isSelected()) {
+            passwordTextField.setVisible(true);
+            passwordTextField.setManaged(true);
+            passwordField.setVisible(false);
+            passwordField.setManaged(false);
+        } else {
+            passwordTextField.setVisible(false);
+            passwordTextField.setManaged(false);
+            passwordField.setVisible(true);
+            passwordField.setManaged(true);
+        }
+    }
+
+    @FXML
+    private void handleForgotPassword() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Forgot Password");
+        dialog.setHeaderText("Password Reset Request");
+        dialog.setContentText("Enter your username to request a reset:");
+
+        dialog.showAndWait().ifPresent(username -> {
+            if (!username.trim().isEmpty()) {
+                DatabaseManager.getInstance().addRequest(username.trim(), "PASSWORD_RESET", "User requested password reset");
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Request Sent");
+                alert.setHeaderText(null);
+                alert.setContentText("Your reset request has been sent. Please wait for an Admin to provide your temporary password.");
+                alert.showAndWait();
+            }
+        });
+    }
 
     @FXML
     private void handleLogin() {

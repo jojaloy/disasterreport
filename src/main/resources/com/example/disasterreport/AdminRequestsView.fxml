@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.disasterreport.controller.AdminRequestsController"
+      spacing="0" style="-fx-background-color: white;">
+
+    <VBox style="-fx-background-color: white; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 18 26 18 26;">
+        <Label text="📥 Review Requests" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f1623; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <Label text="Approve or reject role changes and password resets." style="-fx-font-size: 13px; -fx-text-fill: #6b7280; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+    </VBox>
+
+    <VBox VBox.vgrow="ALWAYS" spacing="0" style="-fx-background-color: white; -fx-padding: 18 26 0 26;">
+        <TableView fx:id="requestTable" VBox.vgrow="ALWAYS" style="-fx-border-color: #e2e5ea; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;">
+            <columns>
+                <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
+                <TableColumn fx:id="usernameCol" text="Username" prefWidth="150"/>
+                <TableColumn fx:id="typeCol" text="Type" prefWidth="180"/>
+                <TableColumn fx:id="detailsCol" text="Details" prefWidth="250"/>
+                <TableColumn fx:id="statusCol" text="Status" prefWidth="120"/>
+            </columns>
+            <placeholder><Label text="No pending requests." style="-fx-text-fill: #9ca3af; -fx-font-size: 13px;"/></placeholder>
+        </TableView>
+    </VBox>
+
+    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #fafbfc; -fx-border-color: #e2e5ea; -fx-border-width: 1 0 0 0; -fx-padding: 12 26 12 26;">
+        <Label fx:id="countLabel" text="0 requests" style="-fx-font-size: 13px; -fx-text-fill: #6b7280; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Reject" onAction="#handleReject" style="-fx-background-color: white; -fx-text-fill: #dc2626; -fx-border-color: #dc2626; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 8 18 8 18;"/>
+        <Button text="Approve" onAction="#handleApprove" style="-fx-background-color: #16a34a; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 8 18 8 18;"/>
+        <Button text="↻ Refresh" onAction="#handleRefresh" style="-fx-background-color: transparent; -fx-text-fill: #0f1623; -fx-border-color: #0f1623; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 8 14 8 14;"/>
+    </HBox>
+</VBox>

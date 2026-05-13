@@ -1,8 +1,6 @@
 package com.example.disasterreport.controller;
 
 import com.example.disasterreport.model.User;
-import com.example.disasterreport.util.DatabaseManager;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -19,18 +17,12 @@ public class RegisterController implements Initializable {
     @FXML private TextField     usernameField;
     @FXML private PasswordField passwordField;
     @FXML private PasswordField confirmPasswordField;
-    @FXML private ComboBox<String> roleCombo;
     @FXML private Label         validationLabel;
     @FXML private Label         successLabel;
     @FXML private Label         statusLabel;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        roleCombo.setItems(FXCollections.observableArrayList(
-                "reporter", "admin", "responder"
-        ));
-        roleCombo.getSelectionModel().selectFirst();
-
         setValidation(false, null);
         setSuccess(false, null);
     }
@@ -45,7 +37,6 @@ public class RegisterController implements Initializable {
         String username        = usernameField.getText().trim();
         String password        = passwordField.getText().trim();
         String confirmPassword = confirmPasswordField.getText().trim();
-        String role            = roleCombo.getValue();
 
         // ── Validation ────────────────────────────────────────────────────
         if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
@@ -68,8 +59,8 @@ public class RegisterController implements Initializable {
             return;
         }
 
-        // ── Persist ───────────────────────────────────────────────────────
-        User newUser = new User(0, username, password, role != null ? role : "reporter");
+        // ── Persist (HARDCODED AS REPORTER) ────────────────────────────────
+        User newUser = new User(0, username, password, "reporter");
         boolean registered = newUser.register();
 
         if (registered) {
@@ -122,6 +113,5 @@ public class RegisterController implements Initializable {
         usernameField.clear();
         passwordField.clear();
         confirmPasswordField.clear();
-        roleCombo.getSelectionModel().selectFirst();
     }
 }

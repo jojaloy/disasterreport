@@ -3,6 +3,7 @@ module com.example.disasterreport {
     requires javafx.fxml;
     requires javafx.web;       // ← required for WebView / WebEngine
     requires java.sql;
+    requires jdk.jsobject;
 
     opens com.example.disasterreport            to javafx.fxml;
     opens com.example.disasterreport.controller to javafx.fxml;

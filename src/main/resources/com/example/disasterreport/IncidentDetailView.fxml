@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.disasterreport.controller.IncidentDetailController"
+      spacing="0" style="-fx-background-color: white;">
+
+    <HBox alignment="CENTER_LEFT" spacing="16"
+          style="-fx-background-color: white; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 16 26 16 26;">
+        <Button text="← Back" onAction="#handleBack"
+                style="-fx-background-color: #f3f4f6; -fx-text-fill: #374151; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 8 16 8 16; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <VBox>
+            <Label text="Incident Details" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f1623; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            <Label fx:id="idLabel" text="ID: #" style="-fx-font-size: 13px; -fx-text-fill: #6b7280; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        </VBox>
+    </HBox>
+
+    <HBox VBox.vgrow="ALWAYS" spacing="0">
+
+        <VBox prefWidth="350" minWidth="350" maxWidth="350" spacing="18"
+              style="-fx-background-color: #fafbfc; -fx-border-color: #e2e5ea; -fx-border-width: 0 1 0 0; -fx-padding: 26;">
+
+            <VBox spacing="4">
+                <Label text="TYPE" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #9ca3af; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <Label fx:id="typeLabel" text="Type" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0f1623; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="STATUS &amp; SEVERITY" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #9ca3af; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label fx:id="statusBadge" text="Status" style="-fx-padding: 4 10; -fx-background-radius: 4; -fx-font-size: 12px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                    <Label fx:id="severityBadge" text="Severity" style="-fx-padding: 4 10; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: #d1d5db; -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="LOCATION" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #9ca3af; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <Label fx:id="locationLabel" text="Location" wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="DATE REPORTED" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #9ca3af; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <Label fx:id="dateLabel" text="Date" style="-fx-font-size: 14px; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="REPORTED BY" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #9ca3af; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <Label fx:id="reporterLabel" text="User" style="-fx-font-size: 14px; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            </VBox>
+
+            <VBox spacing="4" VBox.vgrow="ALWAYS">
+                <Label text="DESCRIPTION" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #9ca3af; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <Label fx:id="descLabel" text="Description..." wrapText="true" alignment="TOP_LEFT" style="-fx-font-size: 14px; -fx-text-fill: #374151; -fx-line-spacing: 4px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </VBox>
+
+        <StackPane HBox.hgrow="ALWAYS">
+            <WebView fx:id="detailMapView" />
+        </StackPane>
+
+    </HBox>
+</VBox>

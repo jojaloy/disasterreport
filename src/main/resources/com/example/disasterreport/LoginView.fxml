@@ -4,10 +4,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<!--
-    LoginView.fxml — Updated color scheme:
-    Dark navy #0f1623 header, white card, orange accent #e8550a
--->
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.disasterreport.controller.LoginController"
@@ -15,7 +11,6 @@
       spacing="0"
       style="-fx-background-color: #f4f5f7;">
 
-    <!-- Top Banner — deep navy matching screenshot sidebar -->
     <HBox alignment="CENTER_LEFT"
           style="-fx-background-color: #0f1623; -fx-padding: 16 28 16 28;">
         <Label text="⚠  Disaster Report System"
@@ -25,7 +20,6 @@
                       -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </HBox>
 
-    <!-- Card area -->
     <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
         <VBox maxWidth="400"
               spacing="0"
@@ -36,12 +30,6 @@
                      -fx-border-width: 1;
                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 18, 0, 0, 4);">
             <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
-
-            <!-- Orange accent bar at top of card -->
-            <HBox style="-fx-background-color: #e8550a;
-                         -fx-background-radius: 6 6 0 0;
-                         -fx-padding: 5 0 5 0;"
-                  maxWidth="Infinity" managed="false" visible="false"/>
 
             <Label text="Welcome Back"
                    style="-fx-font-size: 24px;
@@ -80,8 +68,11 @@
                           -fx-text-fill: #374151;
                           -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
             <Region minHeight="5"/>
-            <PasswordField fx:id="passwordField"
+
+            <StackPane alignment="CENTER_LEFT">
+                <TextField fx:id="passwordTextField"
                            promptText="Enter password"
+                           visible="false" managed="false"
                            style="-fx-background-color: #f9fafb;
                                   -fx-border-color: #d1d5db;
                                   -fx-border-radius: 6;
@@ -89,18 +80,46 @@
                                   -fx-padding: 10 13 10 13;
                                   -fx-font-size: 13px;
                                   -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <PasswordField fx:id="passwordField"
+                               promptText="Enter password"
+                               style="-fx-background-color: #f9fafb;
+                                      -fx-border-color: #d1d5db;
+                                      -fx-border-radius: 6;
+                                      -fx-background-radius: 6;
+                                      -fx-padding: 10 13 10 13;
+                                      -fx-font-size: 13px;
+                                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            </StackPane>
+
+            <Region minHeight="8"/>
+
+            <HBox alignment="CENTER_LEFT">
+                <CheckBox fx:id="showPasswordCheckBox" text="Show Password"
+                          onAction="#togglePasswordVisibility"
+                          style="-fx-font-size: 12px;
+                                 -fx-text-fill: #6b7280;
+                                 -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Hyperlink text="Forgot Password?"
+                           onAction="#handleForgotPassword"
+                           style="-fx-font-size: 12px;
+                                  -fx-text-fill: #e8550a;
+                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;
+                                  -fx-padding: 0;
+                                  -fx-border-color: transparent;"/>
+            </HBox>
 
             <Label fx:id="errorLabel"
                    text=""
                    wrapText="true"
                    style="-fx-text-fill: #dc2626;
                           -fx-font-size: 12px;
+                          -fx-padding: 8 0 0 0;
                           -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"
                    visible="false" managed="false"/>
 
             <Region minHeight="22"/>
 
-            <!-- Primary button — orange accent matching screenshot -->
             <Button fx:id="loginButton"
                     text="Log In"
                     maxWidth="Infinity"
@@ -132,8 +151,8 @@
         </VBox>
     </VBox>
 
-    <!-- Footer -->
-    <HBox style="-fx-background-color: #e8eaed; -fx-padding: 5 14 5 14;">
+    <HBox style="-fx-background-color: #e8eaed;
+                 -fx-padding: 5 14 5 14;">
         <Label text="Ready"
                style="-fx-font-size: 11px;
                       -fx-text-fill: #6b7280;

@@ -216,4 +216,72 @@ public class DatabaseManager {
             return false;
         }
     }
+
+    // ── Requests & Security Operations ──────────────────────────────────────────
+
+    public boolean addRequest(String username, String type, String details) {
+        String sql = "INSERT INTO requests(username, type, details, status) VALUES(?, ?, ?, 'PENDING')";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, type);
+            ps.setString(3, details);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<com.example.disasterreport.model.Request> getPendingRequests() {
+        List<com.example.disasterreport.model.Request> list = new ArrayList<>();
+        String sql = "SELECT * FROM requests WHERE status = 'PENDING' ORDER BY requestID ASC";
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(new com.example.disasterreport.model.Request(
+                        rs.getInt("requestID"),
+                        rs.getString("username"),
+                        rs.getString("type"),
+                        rs.getString("details"),
+                        rs.getString("status")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public void updateRequestStatus(int requestID, String status) {
+        String sql = "UPDATE requests SET status = ? WHERE requestID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, requestID);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateUserPassword(String username, String newPassword) {
+        String sql = "UPDATE users SET password = ? WHERE username = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, newPassword);
+            ps.setString(2, username);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateUserRoleByUsername(String username, String newRole) {
+        String sql = "UPDATE users SET role = ? WHERE username = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, newRole);
+            ps.setString(2, username);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
