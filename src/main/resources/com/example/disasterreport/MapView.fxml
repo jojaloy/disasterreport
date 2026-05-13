@@ -5,88 +5,117 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.disasterreport.controller.MapViewController"
-      spacing="0" style="-fx-background-color: white;">
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.example.disasterreport.controller.MapViewController">
 
-    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #fafbfc; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 11 26 11 26;">
-        <TextField fx:id="searchField" promptText="Search location..." prefWidth="180" style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-font-size: 13px; -fx-padding: 7 10;"/>
-        <ComboBox fx:id="typeFilterCombo" promptText="Type" prefWidth="110" onAction="#handleFilter"/>
-        <ComboBox fx:id="statusFilterCombo" promptText="Status" prefWidth="110" onAction="#handleFilter"/>
-        <Button text="Clear" onAction="#handleClearFilters" style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 6 12;"/>
-        <Button text="↻ Refresh" onAction="#handleRefresh" style="-fx-background-color: transparent; -fx-border-color: #0f1623; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 6 12;"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="markerCountLabel" text="0 incidents" style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
-    </HBox>
+    <VBox spacing="0" style="-fx-background-color: white;">
 
-    <HBox VBox.vgrow="ALWAYS">
-        <VBox prefWidth="410" minWidth="410" maxWidth="410" style="-fx-border-color: #e2e5ea; -fx-border-width: 0 1 0 0; -fx-background-color: white;">
-            <TableView fx:id="incidentTable" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="idColumn"       text="#"        prefWidth="35"/>
-                    <TableColumn fx:id="typeColumn"     text="Type"     prefWidth="95"/>
-                    <TableColumn fx:id="locationColumn" text="Location" prefWidth="105"/>
-                    <TableColumn fx:id="severityColumn" text="Severity" prefWidth="85"/>
-                    <TableColumn fx:id="statusColumn"   text="Status"   prefWidth="85"/>
-                </columns>
-                <placeholder>
-                    <Label text="No incidents." style="-fx-text-fill: #9ca3af; -fx-font-size: 13px;"/>
-                </placeholder>
-            </TableView>
-        </VBox>
+        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #fafbfc; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 11 26 11 26;">
+            <TextField fx:id="searchField" promptText="Search location..." prefWidth="180" style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-font-size: 13px; -fx-padding: 7 10;"/>
+            <ComboBox fx:id="typeFilterCombo" promptText="Type" prefWidth="110" onAction="#handleFilter"/>
 
-        <StackPane HBox.hgrow="ALWAYS">
-            <WebView fx:id="mapWebView" />
+            <MenuButton text="Status Filters" style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-padding: 3 10; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;">
+                <items>
+                    <CheckMenuItem fx:id="chkActive" text="Active" selected="true" onAction="#handleFilter"/>
+                    <CheckMenuItem fx:id="chkMonitoring" text="Monitoring" selected="true" onAction="#handleFilter"/>
+                    <CheckMenuItem fx:id="chkResolved" text="Resolved" selected="false" onAction="#handleFilter"/>
+                </items>
+            </MenuButton>
 
-            <VBox fx:id="detailsPanel" maxWidth="320" maxHeight="380" spacing="10"
-                  visible="false" managed="true"
-                  StackPane.alignment="BOTTOM_RIGHT"
-                  style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e5ea; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 22; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);">
-                <StackPane.margin><Insets bottom="20" right="20"/></StackPane.margin>
+            <Button text="Clear" onAction="#handleClearFilters" style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 6 12;"/>
+            <Button text="↻ Refresh" onAction="#handleRefresh" style="-fx-background-color: transparent; -fx-border-color: #0f1623; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 6 12;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="markerCountLabel" text="0 incidents" style="-fx-font-size: 13px; -fx-text-fill: #6b7280;"/>
+        </HBox>
 
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="Incident Details" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f1623;"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button text="✕" onAction="#closeDetailsPanel" style="-fx-background-color: transparent; -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-cursor: hand;"/>
-                </HBox>
-
-                <Label fx:id="detIdLabel" text="ID: #" style="-fx-font-size: 12px; -fx-text-fill: #6b7280; -fx-margin-top: -10;"/>
-
-                <HBox spacing="8">
-                    <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label text="TYPE" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                        <Label fx:id="detTypeLabel" text="Type" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
-                    </VBox>
-                    <VBox spacing="4" alignment="TOP_RIGHT">
-                        <Label text="REPORTED BY" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                        <Label fx:id="detReporterLabel" text="User" style="-fx-font-size: 13px;"/>
-                    </VBox>
-                </HBox>
-
-                <HBox spacing="8">
-                    <Label fx:id="detStatusBadge" text="Status" style="-fx-padding: 3 8; -fx-background-radius: 4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-                    <Label fx:id="detSeverityBadge" text="Severity" style="-fx-padding: 3 8; -fx-background-radius: 4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-                </HBox>
-
-                <VBox spacing="4">
-                    <Label text="LOCATION" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                    <Label fx:id="detLocationLabel" text="Location" wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #374151;" maxWidth="250"/>
-                </VBox>
-
-                <VBox spacing="4">
-                    <Label text="DATE" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                    <Label fx:id="detDateLabel" text="Date" style="-fx-font-size: 13px; -fx-text-fill: #374151;"/>
-                </VBox>
-
-                <VBox spacing="4" VBox.vgrow="ALWAYS">
-                    <Label text="DESCRIPTION" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
-                    <ScrollPane fitToWidth="true" style="-fx-background: white; -fx-background-color: white; -fx-padding: 0;" VBox.vgrow="ALWAYS">
-                        <Label fx:id="detDescLabel" text="..." wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-line-spacing: 3;"/>
-                    </ScrollPane>
-                </VBox>
-
-                <Button fx:id="btnUpdateStatus" text="Update Status" maxWidth="Infinity" onAction="#handleUpdateStatus" style="-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8; -fx-background-radius: 6;"/>
+        <HBox VBox.vgrow="ALWAYS">
+            <VBox prefWidth="410" minWidth="410" maxWidth="410" style="-fx-border-color: #e2e5ea; -fx-border-width: 0 1 0 0; -fx-background-color: white;">
+                <TableView fx:id="incidentTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="idColumn"       text="#"        prefWidth="35"/>
+                        <TableColumn fx:id="typeColumn"     text="Type"     prefWidth="95"/>
+                        <TableColumn fx:id="locationColumn" text="Location" prefWidth="105"/>
+                        <TableColumn fx:id="severityColumn" text="Severity" prefWidth="85"/>
+                        <TableColumn fx:id="statusColumn"   text="Status"   prefWidth="85"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="No incidents." style="-fx-text-fill: #9ca3af; -fx-font-size: 13px;"/>
+                    </placeholder>
+                </TableView>
             </VBox>
-        </StackPane>
-    </HBox>
-</VBox>
+
+            <StackPane HBox.hgrow="ALWAYS">
+                <WebView fx:id="mapWebView" />
+
+                <VBox fx:id="detailsPanel" maxWidth="320" maxHeight="380" spacing="10"
+                      visible="false" managed="true"
+                      StackPane.alignment="BOTTOM_RIGHT"
+                      style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e5ea; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 22; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);">
+                    <StackPane.margin><Insets bottom="20" right="20"/></StackPane.margin>
+
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="Incident Details" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f1623;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="✕" onAction="#closeDetailsPanel" style="-fx-background-color: transparent; -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                    </HBox>
+
+                    <Label fx:id="detIdLabel" text="ID: #" style="-fx-font-size: 12px; -fx-text-fill: #6b7280; -fx-margin-top: -10;"/>
+
+                    <HBox spacing="8">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="TYPE" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
+                            <Label fx:id="detTypeLabel" text="Type" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                        </VBox>
+                        <VBox spacing="4" alignment="TOP_RIGHT">
+                            <Label text="REPORTED BY" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
+                            <Label fx:id="detReporterLabel" text="User" style="-fx-font-size: 13px;"/>
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="8">
+                        <Label fx:id="detStatusBadge" text="Status" style="-fx-padding: 3 8; -fx-background-radius: 4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="detSeverityBadge" text="Severity" style="-fx-padding: 3 8; -fx-background-radius: 4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    </HBox>
+
+                    <VBox spacing="4">
+                        <Label text="LOCATION" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
+                        <Label fx:id="detLocationLabel" text="Location" wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #374151;" maxWidth="250"/>
+                    </VBox>
+
+                    <VBox spacing="4">
+                        <Label text="DATE" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
+                        <Label fx:id="detDateLabel" text="Date" style="-fx-font-size: 13px; -fx-text-fill: #374151;"/>
+                    </VBox>
+
+                    <VBox spacing="4" VBox.vgrow="ALWAYS">
+                        <Label text="DESCRIPTION" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #9ca3af;"/>
+                        <ScrollPane fitToWidth="true" style="-fx-background: white; -fx-background-color: white; -fx-padding: 0;" VBox.vgrow="ALWAYS">
+                            <Label fx:id="detDescLabel" text="..." wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-line-spacing: 3;"/>
+                        </ScrollPane>
+                    </VBox>
+
+                    <Button fx:id="btnUpdateStatus" text="Update Status" maxWidth="Infinity" onAction="#handleUpdateStatus" style="-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8; -fx-background-radius: 6;"/>
+                </VBox>
+            </StackPane>
+        </HBox>
+    </VBox>
+
+    <StackPane fx:id="statusUpdateOverlay" visible="false" managed="false" style="-fx-background-color: rgba(15, 22, 35, 0.65);">
+        <VBox maxWidth="360" maxHeight="220" spacing="16" StackPane.alignment="CENTER"
+              style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 25, 0, 0, 10);">
+
+            <Label text="Update Incident Status" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0f1623; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            <Label fx:id="updateOverlaySubtitle" text="Select a new status below." style="-fx-font-size: 13px; -fx-text-fill: #6b7280; -fx-font-family: 'Segoe UI', 'Arial', sans-serif; -fx-margin-top: -8;"/>
+
+            <ComboBox fx:id="updateStatusCombo" maxWidth="Infinity" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 14px; -fx-padding: 4; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <HBox spacing="12" alignment="CENTER_RIGHT">
+                <Button text="Cancel" onAction="#closeUpdateOverlay" style="-fx-background-color: white; -fx-text-fill: #374151; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 9 18; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <Button text="Save Changes" onAction="#saveUpdateStatus" style="-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 9 18; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+</StackPane>
