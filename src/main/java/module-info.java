@@ -6,6 +6,7 @@ module com.example.disasterreport {
     requires jdk.jsobject;
     requires jdk.httpserver;
     requires java.net.http;
+    requires java.desktop;
 
     opens com.example.disasterreport            to javafx.fxml;
     opens com.example.disasterreport.controller to javafx.fxml;

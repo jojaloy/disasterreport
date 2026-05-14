@@ -17,12 +17,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import netscape.javascript.JSObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -32,7 +30,6 @@ import java.util.ResourceBundle;
 
 public class MapViewController implements Initializable {
 
-    // Main UI
     @FXML private TableView<Incident> incidentTable;
     @FXML private TableColumn<Incident, Integer> idColumn;
     @FXML private TableColumn<Incident, String> typeColumn, locationColumn, severityColumn, statusColumn;
@@ -43,12 +40,7 @@ public class MapViewController implements Initializable {
     @FXML private VBox detailsPanel;
     @FXML private Button btnUpdateStatus;
 
-    // Status Checklist Elements
-    @FXML private CheckMenuItem chkActive;
-    @FXML private CheckMenuItem chkMonitoring;
-    @FXML private CheckMenuItem chkResolved;
-
-    // Custom Popup Overlay Elements
+    @FXML private CheckMenuItem chkActive, chkMonitoring, chkResolved;
     @FXML private StackPane statusUpdateOverlay;
     @FXML private Label updateOverlaySubtitle;
     @FXML private ComboBox<String> updateStatusCombo;
@@ -58,31 +50,10 @@ public class MapViewController implements Initializable {
     private boolean mapReady = false;
     private MainController mainController;
     private Incident currentSelectedIncident = null;
-
     private Incident pendingDetailView = null;
 
     private static final double CENTER_LAT = 12.8797, CENTER_LNG = 121.7740;
     private static final int ZOOM = 6;
-
-    // ── THE SILVER BULLET JS BRIDGE ─────────────────────────────────────────
-    private final JSBridge jsBridge = new JSBridge();
-
-    public class JSBridge {
-        public void goToDetails(String idStr) {
-            try {
-                int id = Integer.parseInt(idStr);
-                allIncidents.stream().filter(i -> i.getIncidentID() == id).findFirst().ifPresent(i ->
-                        Platform.runLater(() -> {
-                            incidentTable.getSelectionModel().select(i);
-                            incidentTable.scrollTo(i);
-                        })
-                );
-            } catch (Exception e) {
-                System.err.println("Failed to parse Incident ID from Map click.");
-            }
-        }
-    }
-    // ────────────────────────────────────────────────────────────────────────
 
     public void setMainController(MainController mc) { this.mainController = mc; }
     public void setCurrentUserRole(String role) {
@@ -92,6 +63,12 @@ public class MapViewController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        initTable();
+        initFilters();
+        initMap();
+    }
+
+    private void initTable() {
         applyModernTableStyles();
 
         idColumn.setCellValueFactory(new PropertyValueFactory<>("incidentID"));
@@ -137,20 +114,36 @@ public class MapViewController implements Initializable {
         incidentTable.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
             if (selected != null) showIncidentDetailsPanel(selected);
         });
+    }
 
+    private void initFilters() {
         typeFilterCombo.setItems(FXCollections.observableArrayList("All", "Flood", "Fire", "Earthquake", "Typhoon", "Landslide", "Other"));
         updateStatusCombo.setItems(FXCollections.observableArrayList("Active", "Monitoring", "Resolved"));
+    }
 
+    private void initMap() {
         engine = mapWebView.getEngine();
         engine.setJavaScriptEnabled(true);
-        engine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+        engine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+        engine.setOnAlert(event -> {
+            String data = event.getData();
+            if (data != null && data.startsWith("GO_TO_DETAILS:")) {
+                try {
+                    int id = Integer.parseInt(data.substring(14));
+                    Platform.runLater(() -> {
+                        allIncidents.stream().filter(i -> i.getIncidentID() == id).findFirst().ifPresent(i -> {
+                            incidentTable.getSelectionModel().select(i);
+                            incidentTable.scrollTo(i);
+                        });
+                    });
+                } catch (NumberFormatException e) {}
+            }
+        });
 
         engine.getLoadWorker().stateProperty().addListener((obs, old, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
                 mapReady = true;
-                JSObject window = (JSObject) engine.executeScript("window");
-                window.setMember("javaApp", jsBridge);
-
                 PauseTransition pause = new PauseTransition(Duration.millis(150));
                 pause.setOnFinished(e -> {
                     engine.executeScript("map.invalidateSize();");
@@ -168,38 +161,33 @@ public class MapViewController implements Initializable {
     }
 
     private void applyModernTableStyles() {
-        String css = ".table-view { -fx-background-color: white; -fx-border-width: 0; -fx-padding: 0; }\n" +
-                ".table-view .column-header-background { -fx-background-color: white; -fx-border-width: 0 0 1px 0; -fx-border-color: #e2e5ea; }\n" +
-                ".table-view .column-header { -fx-background-color: transparent; -fx-border-width: 0; }\n" +
-                ".table-view .column-header .label { -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-font-size: 11px; }\n" +
-                ".table-row-cell { -fx-background-color: white; -fx-border-width: 0 0 1px 0; -fx-border-color: #f3f4f6; }\n" +
-                ".table-row-cell:empty { -fx-border-width: 0; }\n" +
-                ".table-row-cell:hover { -fx-background-color: #f9fafb; }\n" +
-                ".table-row-cell:selected { -fx-background-color: #fff7ed; }\n" +
-                ".table-cell { -fx-border-width: 0; -fx-padding: 12px 8px; -fx-font-size: 13px; -fx-text-fill: #374151; -fx-alignment: CENTER-LEFT; }";
+        String css = """
+            .table-view { -fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; }
+            .table-view .column-header-background { -fx-background-color: transparent; -fx-border-width: 0 0 1px 0; -fx-border-color: #e2e5ea; }
+            .table-view .column-header { -fx-background-color: transparent; -fx-border-width: 0; }
+            .table-view .column-header .label { -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-font-size: 11px; }
+            .table-row-cell { -fx-background-color: transparent; -fx-border-width: 0 0 1px 0; -fx-border-color: #f3f4f6; }
+            .table-row-cell:empty { -fx-border-width: 0; }
+            .table-row-cell:hover { -fx-background-color: #f9fafb; }
+            .table-row-cell:selected { -fx-background-color: #fff7ed; }
+            .table-cell { -fx-border-width: 0; -fx-padding: 12px 8px; -fx-font-size: 13px; -fx-text-fill: #374151; -fx-alignment: CENTER-LEFT; }
+            """;
         String dataUri = "data:text/css;base64," + Base64.getEncoder().encodeToString(css.getBytes());
         incidentTable.getStylesheets().add(dataUri);
     }
 
-    // ── DATA LOADING & FILTERING ──────────────────────────────────────────
-
     public void loadIncidents(List<Incident> incidents) {
         this.allIncidents = FXCollections.observableArrayList(incidents);
-
-        // Reset checklist to show only active/monitoring by default
         chkActive.setSelected(true);
         chkMonitoring.setSelected(true);
         chkResolved.setSelected(false);
-
         applyFilters();
     }
 
     public void viewSpecificIncident(int id) {
         Platform.runLater(() -> {
-            // Force turn on "Resolved" checkbox just in case the target is a resolved incident
             chkResolved.setSelected(true);
             applyFilters();
-
             allIncidents.stream().filter(i -> i.getIncidentID() == id).findFirst().ifPresent(i -> {
                 incidentTable.getSelectionModel().select(i);
                 incidentTable.scrollTo(i);
@@ -207,20 +195,15 @@ public class MapViewController implements Initializable {
         });
     }
 
-    @FXML private void handleRefresh() {
-        loadIncidents(DatabaseManager.getInstance().getIncidents());
-    }
-
+    @FXML private void handleRefresh() { loadIncidents(DatabaseManager.getInstance().getIncidents()); }
     @FXML private void handleFilter() { applyFilters(); }
 
     @FXML private void handleClearFilters() {
         searchField.clear();
         typeFilterCombo.setValue("All");
-
         chkActive.setSelected(true);
         chkMonitoring.setSelected(true);
         chkResolved.setSelected(false);
-
         applyFilters();
     }
 
@@ -235,21 +218,17 @@ public class MapViewController implements Initializable {
         ObservableList<Incident> filtered = allIncidents.filtered(i -> {
             boolean keyMatch = keyword.isEmpty() || i.getLocation().toLowerCase().contains(keyword) || i.getType().toLowerCase().contains(keyword);
             boolean typeMatch = type == null || type.equals("All") || i.getType().equals(type);
-
             boolean statusMatch = false;
             String st = i.getStatus();
             if ("Active".equals(st) && showActive) statusMatch = true;
             if ("Monitoring".equals(st) && showMonitoring) statusMatch = true;
             if ("Resolved".equals(st) && showResolved) statusMatch = true;
-
             return keyMatch && typeMatch && statusMatch;
         });
 
         incidentTable.setItems(filtered);
         renderMarkers(filtered);
     }
-
-    // ── DETAILS PANEL ─────────────────────────────────────────────────────
 
     public void showIncidentDetailsPanel(Incident inc) {
         this.currentSelectedIncident = inc;
@@ -260,11 +239,7 @@ public class MapViewController implements Initializable {
             detLocationLabel.setText(inc.getLocation());
             detReporterLabel.setText(inc.getReportedBy());
             detDescLabel.setText(inc.getDescription() != null && !inc.getDescription().isEmpty() ? inc.getDescription() : "—");
-            if (inc.getDate() != null) {
-                detDateLabel.setText(inc.getDate().toString());
-            } else {
-                detDateLabel.setText("—");
-            }
+            detDateLabel.setText(inc.getDate() != null ? inc.getDate().toString() : "—");
 
             detStatusBadge.setText(inc.getStatus());
             detStatusBadge.setStyle(statusBadgeStyle(inc.getStatus()));
@@ -290,14 +265,10 @@ public class MapViewController implements Initializable {
 
     @FXML private void closeDetailsPanel() { detailsPanel.setVisible(false); incidentTable.getSelectionModel().clearSelection(); try { engine.executeScript("map.flyTo([" + CENTER_LAT + ", " + CENTER_LNG + "], " + ZOOM + ", { animate: true });"); } catch (Exception e) {} }
 
-    // ── CUSTOM OVERLAY STATUS UPDATE LOGIC ─────────────────────────────
-
     @FXML private void handleUpdateStatus() {
         if (currentSelectedIncident == null) return;
-
         updateOverlaySubtitle.setText("Change status for Incident #" + currentSelectedIncident.getIncidentID() + " (" + currentSelectedIncident.getType() + ")");
         updateStatusCombo.setValue(currentSelectedIncident.getStatus());
-
         statusUpdateOverlay.setVisible(true);
         statusUpdateOverlay.setManaged(true);
     }
@@ -309,27 +280,19 @@ public class MapViewController implements Initializable {
 
     @FXML private void saveUpdateStatus() {
         if (currentSelectedIncident == null || updateStatusCombo.getValue() == null) return;
-
         String newStatus = updateStatusCombo.getValue();
         currentSelectedIncident.setStatus(newStatus);
         DatabaseManager.getInstance().updateIncident(currentSelectedIncident);
-
         incidentTable.refresh();
-
-        // Hide card if it was marked Resolved and the "Resolved" checkbox isn't currently checked
         if ("Resolved".equals(newStatus) && !chkResolved.isSelected()) {
             closeDetailsPanel();
         } else {
             showIncidentDetailsPanel(currentSelectedIncident);
         }
-
         applyFilters();
         if (mainController != null) mainController.refreshSidebarStats();
-
         closeUpdateOverlay();
     }
-
-    // ── MAP RENDERING ─────────────────────────────────────────────────────
 
     private void renderMarkers(List<Incident> incidents) {
         markerCountLabel.setText(incidents.size() + " incidents");
@@ -358,28 +321,66 @@ public class MapViewController implements Initializable {
         engine.load(tempDir.resolve("map.html").toUri().toString());
     }
 
-    private void copyResource(String cp, Path dest) throws IOException { try (InputStream is = getClass().getResourceAsStream(cp)) { if (is != null) Files.copy(is, dest, StandardCopyOption.REPLACE_EXISTING); } }
+    private void copyResource(String cp, Path dest) throws IOException {
+        try (InputStream is = getClass().getResourceAsStream(cp)) {
+            if (is != null) Files.copy(is, dest, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
 
     private String buildMapHtml() {
-        StringBuilder h = new StringBuilder();
-        h.append("<!DOCTYPE html><html><head><meta charset='utf-8'/><link rel='stylesheet' href='leaflet.css'/>");
-        h.append("<style>html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #e5e7eb; font-family: 'Segoe UI', Arial, sans-serif; } ");
-        h.append(".custom-tooltip { font-weight: bold; padding: 4px 8px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border: none; } ");
-        h.append(".leaflet-interactive { cursor: pointer !important; }</style></head>");
-        h.append("<body><div id='map'></div><script src='leaflet.js'></script><script>");
-        h.append("L.Browser.any3d = false; ");
-        h.append("var map = L.map('map', { center: [").append(CENTER_LAT).append(", ").append(CENTER_LNG).append("], zoom: ").append(ZOOM).append(", zoomControl: true, scrollWheelZoom: true, doubleClickZoom: true }); ");
-        h.append("L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, minZoom: 2, subdomains: 'abcd', updateWhenIdle: false, updateWhenZooming: false, keepBuffer: 4 }).addTo(map); ");
-        h.append("window.addEventListener('load', function() { setTimeout(function(){ map.invalidateSize(); }, 250); }); window.addEventListener('resize', function(){ map.invalidateSize(); }); ");
-        h.append("var markerLayer = L.layerGroup().addTo(map); ");
-        h.append("function renderAll(data) { markerLayer.clearLayers(); data.forEach(function(d) { ");
-        h.append("var iconHtml = '<div style=\"width:16px;height:16px;border-radius:50%;background:'+d.color+';border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.4);\"></div>'; ");
-        h.append("var icon = L.divIcon({className: '', html: iconHtml, iconSize: [16,16], iconAnchor: [8,8]}); ");
-        h.append("var m = L.marker([d.lat, d.lng], {icon: icon}).addTo(markerLayer); ");
-        h.append("m.bindTooltip(d.type + ' &mdash; ' + d.loc, {direction: 'top', offset: [0, -10], className: 'custom-tooltip'}); ");
-        h.append("m.on('click', function() { if (window.javaApp) { javaApp.goToDetails(d.id.toString()); } }); ");
-        h.append("}); } </script></body></html>");
-        return h.toString();
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='utf-8'/>
+                <link rel='stylesheet' href='leaflet.css'/>
+                <style>
+                    html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #e5e7eb; font-family: 'Segoe UI', Arial, sans-serif; } 
+                    .custom-tooltip { font-weight: bold; padding: 4px 8px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border: none; } 
+                    .leaflet-interactive { cursor: pointer !important; }
+                </style>
+            </head>
+            <body>
+                <div id='map'></div>
+                <script src='leaflet.js'></script>
+                <script>
+                    L.Browser.any3d = false; 
+                    var map = L.map('map', { center: [12.8797, 121.7740], zoom: 6, zoomControl: true, scrollWheelZoom: true, doubleClickZoom: true }); 
+                    
+                    // WEBKIT NETWORKING BYPASS
+                    var onlineUrl = 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+                    var offlineUrl = 'http://127.0.0.1:8080/tiles/{z}/{x}/{y}.png';
+                    
+                    var tileLayer = L.tileLayer(onlineUrl, { maxZoom: 18, minZoom: 2, keepBuffer: 4 });
+                    
+                    tileLayer.on('tileerror', function(e) {
+                        var fallback = offlineUrl.replace('{z}', e.coords.z).replace('{x}', e.coords.x).replace('{y}', e.coords.y);
+                        if (e.tile.src !== fallback) {
+                            e.tile.src = fallback;
+                        }
+                    });
+                    
+                    tileLayer.addTo(map); 
+                    
+                    window.addEventListener('load', function() { setTimeout(function(){ map.invalidateSize(); }, 250); }); 
+                    window.addEventListener('resize', function(){ map.invalidateSize(); }); 
+                    
+                    var markerLayer = L.layerGroup().addTo(map); 
+                    
+                    function renderAll(data) { 
+                        markerLayer.clearLayers(); 
+                        data.forEach(function(d) { 
+                            var iconHtml = '<div style="width:16px;height:16px;border-radius:50%;background:'+d.color+';border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.4);"></div>'; 
+                            var icon = L.divIcon({className: '', html: iconHtml, iconSize: [16,16], iconAnchor: [8,8]}); 
+                            var m = L.marker([d.lat, d.lng], {icon: icon}).addTo(markerLayer); 
+                            m.bindTooltip(d.type + ' &mdash; ' + d.loc, {direction: 'top', offset: [0, -10], className: 'custom-tooltip'}); 
+                            m.on('click', function() { alert('GO_TO_DETAILS:' + d.id); }); 
+                        }); 
+                    } 
+                </script>
+            </body>
+            </html>
+            """;
     }
 
     private String colorFor(String t) { return switch(t){case "Flood"->"#3b82f6";case "Fire"->"#ef4444";case "Earthquake"->"#f97316";case "Typhoon"->"#8b5cf6";case "Landslide"->"#a16207";default->"#6b7280";}; }
@@ -405,6 +406,6 @@ public class MapViewController implements Initializable {
             case "Resolved" -> { bg = "#dcfce7"; fg = "#15803d"; }
             default -> { bg = "#f3f4f6"; fg = "#6b7280"; }
         }
-        return String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 3 10;", bg, fg);
+        return String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-size: 11px; -fx-font-weight: bold; -background-radius: 20; -fx-padding: 3 10;", bg, fg);
     }
 }
