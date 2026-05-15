@@ -26,8 +26,8 @@ import java.util.List;
 public class MainController {
 
     @FXML private VBox  contentArea;
-    @FXML private Label loggedInUserLabel, totalIncidentsLabel, activeIncidentsLabel, resolvedIncidentsLabel, statusLabel;
-    @FXML private Button btnDashboard, btnReportIncident, btnMapView, btnManageUsers, btnRequestRole, btnAdminRequests;
+    @FXML private Label loggedInUserLabel, totalIncidentsLabel, activeIncidentsLabel, resolvedIncidentsLabel, statusLabel, adminLabel;
+    @FXML private Button btnDashboard, btnReportIncident, btnMapView, btnManageUsers, btnRequestRole, btnProfile;
 
     private User currentUser;
 
@@ -39,13 +39,13 @@ public class MainController {
         loggedInUserLabel.setText("Logged in as: " + user.getUsername());
 
         if ("admin".equals(user.getRole())) {
+            adminLabel.setVisible(true);       adminLabel.setManaged(true);
             btnManageUsers.setVisible(true);   btnManageUsers.setManaged(true);
-            btnAdminRequests.setVisible(true); btnAdminRequests.setManaged(true);
             btnRequestRole.setVisible(false);  btnRequestRole.setManaged(false);
         } else {
-            btnManageUsers.setVisible(false);   btnManageUsers.setManaged(false);
-            btnAdminRequests.setVisible(false); btnAdminRequests.setManaged(false);
-            btnRequestRole.setVisible(true);    btnRequestRole.setManaged(true);
+            adminLabel.setVisible(false);      adminLabel.setManaged(false);
+            btnManageUsers.setVisible(false);  btnManageUsers.setManaged(false);
+            btnRequestRole.setVisible(true);   btnRequestRole.setManaged(true);
         }
         refreshDashboard();
     }
@@ -57,11 +57,19 @@ public class MainController {
         totalIncidentsLabel.setText(String.valueOf(all.size()));
         activeIncidentsLabel.setText(String.valueOf(active));
         resolvedIncidentsLabel.setText(String.valueOf(resolved));
+
+        if (currentUser != null && "admin".equals(currentUser.getRole())) {
+            int reqCount = DatabaseManager.getInstance().getPendingRequestsCount();
+            if (reqCount > 0) {
+                btnManageUsers.setText("Manage Users (" + reqCount + ")");
+            } else {
+                btnManageUsers.setText("Manage Users");
+            }
+        }
     }
 
     public void refreshDashboard() {
         refreshSidebarStats();
-
         contentArea.getChildren().clear();
         contentArea.setPadding(new Insets(26, 28, 26, 28));
 
@@ -72,7 +80,6 @@ public class MainController {
         card.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e5ea; -fx-padding: 22; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);");
         VBox.setVgrow(card, Priority.ALWAYS);
 
-        // ── TOP BAR: Title + Search ──
         HBox topBar = new HBox(10);
         topBar.setAlignment(Pos.CENTER_LEFT);
 
@@ -89,23 +96,40 @@ public class MainController {
 
         topBar.getChildren().addAll(recentLabel, spacer, searchField);
 
-        // ── TABLE VIEW ──
         TableView<Incident> table = new TableView<>();
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        // Apply double-click listener to rows
         table.setRowFactory(tv -> {
-            TableRow<Incident> row = new TableRow<>();
+            TableRow<Incident> row = new TableRow<>() {
+                @Override
+                protected void updateItem(Incident item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setStyle("-fx-background-color: transparent; -fx-border-width: 0;");
+                    } else {
+                        String tint = getRowTint(item.getType());
+                        setStyle("-fx-background-color: " + tint + "; -fx-border-color: #f3f4f6; -fx-border-width: 0 0 1px 0;");
+                    }
+                }
+            };
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    Incident rowData = row.getItem();
-                    openMapWithIncident(rowData.getIncidentID());
+                    openMapWithIncident(row.getItem().getIncidentID());
+                }
+            });
+            row.hoverProperty().addListener((obs, wasHovered, isNowHovered) -> {
+                if (!row.isEmpty() && row.getItem() != null) {
+                    if (isNowHovered) {
+                        row.setStyle("-fx-background-color: #e5e7eb; -fx-border-color: #d1d5db; -fx-border-width: 0 0 1px 0; -fx-cursor: hand;");
+                    } else {
+                        String tint = getRowTint(row.getItem().getType());
+                        row.setStyle("-fx-background-color: " + tint + "; -fx-border-color: #f3f4f6; -fx-border-width: 0 0 1px 0;");
+                    }
                 }
             });
             return row;
         });
 
-        // Apply Modern Borderless CSS
         String css = """
             .table-view { -fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; }
             .table-view .column-header-background { -fx-background-color: transparent; -fx-border-width: 0 0 1px 0; -fx-border-color: #e2e5ea; }
@@ -113,21 +137,18 @@ public class MainController {
             .table-view .column-header .label { -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-font-size: 11px; }
             .table-row-cell { -fx-background-color: transparent; -fx-border-width: 0 0 1px 0; -fx-border-color: #f3f4f6; }
             .table-row-cell:empty { -fx-border-width: 0; }
-            .table-row-cell:hover { -fx-background-color: #f9fafb; cursor: hand; }
-            .table-row-cell:selected { -fx-background-color: #fff7ed; }
             .table-cell { -fx-border-width: 0; -fx-padding: 12px 8px; -fx-font-size: 13px; -fx-text-fill: #374151; -fx-alignment: CENTER-LEFT; }
             """;
         String dataUri = "data:text/css;base64," + Base64.getEncoder().encodeToString(css.getBytes());
         table.getStylesheets().add(dataUri);
 
-        // Define Columns
         TableColumn<Incident, Integer> idCol = new TableColumn<>("#");
         idCol.setCellValueFactory(new PropertyValueFactory<>("incidentID"));
         idCol.setPrefWidth(50);
 
         TableColumn<Incident, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
-        typeCol.setPrefWidth(140);
+        typeCol.setPrefWidth(120);
         typeCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String type, boolean empty) {
                 super.updateItem(type, empty);
@@ -140,11 +161,17 @@ public class MainController {
 
         TableColumn<Incident, String> locCol = new TableColumn<>("Location");
         locCol.setCellValueFactory(new PropertyValueFactory<>("location"));
-        locCol.setPrefWidth(280);
+        locCol.setPrefWidth(240);
+
+        // NEW: Reported By Column
+        TableColumn<Incident, String> repCol = new TableColumn<>("Reported By");
+        repCol.setCellValueFactory(new PropertyValueFactory<>("reportedBy"));
+        repCol.setPrefWidth(120);
+        repCol.setStyle("-fx-text-fill: #6b7280;"); // Slightly dimmed text for the username
 
         TableColumn<Incident, String> sevCol = new TableColumn<>("Severity");
         sevCol.setCellValueFactory(new PropertyValueFactory<>("severity"));
-        sevCol.setPrefWidth(120);
+        sevCol.setPrefWidth(110);
         sevCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String sev, boolean empty) {
                 super.updateItem(sev, empty);
@@ -160,7 +187,7 @@ public class MainController {
 
         TableColumn<Incident, String> statCol = new TableColumn<>("Status");
         statCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        statCol.setPrefWidth(120);
+        statCol.setPrefWidth(110);
         statCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String stat, boolean empty) {
                 super.updateItem(stat, empty);
@@ -174,9 +201,9 @@ public class MainController {
             }
         });
 
-        table.getColumns().addAll(idCol, typeCol, locCol, sevCol, statCol);
+        // Add the columns, including repCol
+        table.getColumns().addAll(idCol, typeCol, locCol, repCol, sevCol, statCol);
 
-        // Data & Search Filtering
         ObservableList<Incident> allData = FXCollections.observableArrayList(DatabaseManager.getInstance().getIncidents());
         FilteredList<Incident> filteredData = new FilteredList<>(allData, p -> true);
 
@@ -186,7 +213,8 @@ public class MainController {
                 String lower = newVal.toLowerCase();
                 return inc.getLocation().toLowerCase().contains(lower)
                         || inc.getType().toLowerCase().contains(lower)
-                        || inc.getStatus().toLowerCase().contains(lower);
+                        || inc.getStatus().toLowerCase().contains(lower)
+                        || inc.getReportedBy().toLowerCase().contains(lower); // Allow searching by user!
             });
         });
 
@@ -202,17 +230,18 @@ public class MainController {
     }
 
     private void setActiveNavButton(Button activeBtn) {
-        Button[] buttons = {btnDashboard, btnReportIncident, btnMapView, btnManageUsers, btnAdminRequests, btnRequestRole};
+        Button[] buttons = {btnDashboard, btnReportIncident, btnMapView, btnManageUsers, btnProfile, btnRequestRole};
         for (Button btn : buttons) if (btn != null) btn.setStyle(btn == activeBtn ? NAV_ACTIVE : NAV_INACTIVE);
     }
 
     @FXML private void showDashboard() { setActiveNavButton(btnDashboard); refreshDashboard(); }
     @FXML private void showReportForm() { setActiveNavButton(btnReportIncident); loadView("ReportIncident.fxml"); }
     @FXML private void showMapView() { setActiveNavButton(btnMapView); loadView("MapView.fxml"); }
-    @FXML private void showManageUsers() { setActiveNavButton(btnManageUsers); loadView("Manageusersview.fxml"); }
-    @FXML private void showAdminRequests() { setActiveNavButton(btnAdminRequests); loadView("AdminRequestsView.fxml"); }
+    @FXML private void showProfile() { setActiveNavButton(btnProfile); loadView("ProfileView.fxml"); }
 
-    // ── NEW HELPER METHOD: Jump to map and select incident ──
+    // Admin only
+    @FXML private void showManageUsers() { setActiveNavButton(btnManageUsers); loadView("Manageusersview.fxml"); }
+
     private void openMapWithIncident(int incidentId) {
         setActiveNavButton(btnMapView);
         try {
@@ -226,30 +255,29 @@ public class MainController {
                 mc.setMainController(this);
                 if (currentUser != null) mc.setCurrentUserRole(currentUser.getRole());
                 mc.loadIncidents(DatabaseManager.getInstance().getIncidents());
-                mc.viewSpecificIncident(incidentId); // Select the incident directly
+                mc.viewSpecificIncident(incidentId);
             }
 
             VBox.setVgrow(view, Priority.ALWAYS);
             contentArea.getChildren().setAll(view);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
     private void handleRequestRole() {
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("responder", "responder", "admin");
-        dialog.setTitle("Request Role Change");
-        dialog.setHeaderText("Request a role upgrade");
-        dialog.setContentText("Select the role you are applying for:");
+        java.util.Optional<String> result = com.example.disasterreport.util.ModernDialog.showChoice(
+                "Request Role Change",
+                "Select the role you are applying for:",
+                new String[]{"responder", "admin"}
+        );
 
-        dialog.showAndWait().ifPresent(role -> {
+        result.ifPresent(role -> {
             DatabaseManager.getInstance().addRequest(currentUser.getUsername(), "ROLE_CHANGE", role);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Success");
-            alert.setHeaderText(null);
-            alert.setContentText("Your request to become a " + role + " has been sent to the admin.");
-            alert.showAndWait();
+            com.example.disasterreport.util.ModernDialog.showMessage(
+                    "Success",
+                    "Your request to become a " + role + " has been sent to the admin.",
+                    false
+            );
         });
     }
 
@@ -259,14 +287,13 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/disasterreport/LoginView.fxml"));
             javafx.scene.Parent root = loader.load();
             Stage stage = (Stage) contentArea.getScene().getWindow();
+            stage.setMaximized(false);
             stage.setMinWidth(480); stage.setMinHeight(600);
             stage.setWidth(480); stage.setHeight(600);
             stage.centerOnScreen();
             stage.setScene(new Scene(root, 480, 600));
             stage.setTitle("Disaster Report System – Login");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void loadView(String fxml) {
@@ -276,6 +303,8 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/disasterreport/" + fxml));
             Node view = loader.load();
             Object ctrl = loader.getController();
+
+            // Pass references down
             if (ctrl instanceof MapViewController mc) {
                 mc.setMainController(this);
                 if (currentUser != null) mc.setCurrentUserRole(currentUser.getRole());
@@ -285,9 +314,28 @@ public class MainController {
                 rc.setCurrentUsername(currentUser.getUsername());
                 rc.setMainController(this);
             }
+            if (ctrl instanceof ProfileController pc) {
+                pc.setCurrentUser(currentUser);
+            }
+            if (ctrl instanceof ManageUsersController uc) {
+                uc.setMainController(this);
+            }
+
             VBox.setVgrow(view, Priority.ALWAYS);
             contentArea.getChildren().setAll(view);
         } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private String getRowTint(String type) {
+        if (type == null) return "transparent";
+        return switch(type) {
+            case "Flood" -> "#eff6ff";
+            case "Fire" -> "#fef2f2";
+            case "Earthquake" -> "#fff7ed";
+            case "Typhoon" -> "#f5f3ff";
+            case "Landslide" -> "#fefce8";
+            default -> "transparent";
+        };
     }
 
     private String severityBadgeStyle(String s) {

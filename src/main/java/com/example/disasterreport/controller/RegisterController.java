@@ -63,15 +63,14 @@ public class RegisterController implements Initializable {
         User newUser = new User(0, username, password, "reporter");
         boolean registered = newUser.register();
 
+        // inside handleRegister()...
         if (registered) {
-            // Show a brief success alert, then redirect to login
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Registration Successful");
-            alert.setHeaderText(null);
-            alert.setContentText("Account created successfully! You will now be redirected to the login page.");
-            alert.showAndWait();
-
-            // Auto-redirect to login after the user closes the alert
+            // Replaced the ugly native Alert
+            com.example.disasterreport.util.ModernDialog.showMessage(
+                    "Registration Successful",
+                    "Account created successfully! You will now be redirected to the login page.",
+                    false
+            );
             handleBackToLogin();
         } else {
             setValidation(true, "Username already exists. Please choose another.");

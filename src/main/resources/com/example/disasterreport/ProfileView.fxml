@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.disasterreport.controller.ProfileController"
+      spacing="0" style="-fx-background-color: white;" alignment="TOP_CENTER">
+
+    <VBox style="-fx-background-color: white; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 18 26 18 26;" alignment="CENTER_LEFT" maxWidth="Infinity">
+        <Label text="👤 My Profile" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f1623; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <Label text="View your account details and manage your security." style="-fx-font-size: 13px; -fx-text-fill: #6b7280; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+    </VBox>
+
+    <VBox maxWidth="450" spacing="24" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e5ea; -fx-border-radius: 12; -fx-padding: 30; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);">
+        <VBox.margin><Insets top="40"/></VBox.margin>
+
+        <VBox alignment="CENTER" spacing="8">
+            <Label text="⚙" style="-fx-font-size: 48px; -fx-text-fill: #e8550a;"/>
+            <Label fx:id="usernameLabel" text="Username" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0f1623; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            <Label fx:id="roleLabel" text="ROLE" style="-fx-background-color: #f3f4f6; -fx-text-fill: #374151; -fx-padding: 4 12; -fx-background-radius: 20; -fx-font-size: 11px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        </VBox>
+
+        <Separator style="-fx-background-color: #e2e5ea;"/>
+
+        <VBox spacing="16">
+            <Label text="Change Password" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f1623; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+
+            <VBox spacing="6">
+                <Label text="New Password" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <PasswordField fx:id="newPassField" promptText="Enter new password" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 10; -fx-font-size: 13px;"/>
+            </VBox>
+
+            <VBox spacing="6">
+                <Label text="Confirm New Password" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <PasswordField fx:id="confirmPassField" promptText="Re-enter new password" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 10; -fx-font-size: 13px;"/>
+            </VBox>
+
+            <Button text="Update Security Settings" maxWidth="Infinity" onAction="#handleUpdatePassword" style="-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 10; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;">
+                <VBox.margin><Insets top="10"/></VBox.margin>
+            </Button>
+        </VBox>
+    </VBox>
+</VBox>

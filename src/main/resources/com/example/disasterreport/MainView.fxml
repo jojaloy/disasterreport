@@ -16,7 +16,7 @@
     </HBox>
 
     <HBox VBox.vgrow="ALWAYS">
-        <VBox spacing="4" style="-fx-background-color: #0f1623;" minWidth="195" maxWidth="195">
+        <VBox spacing="4" style="-fx-background-color: #0f1623;" minWidth="205" maxWidth="205">
             <padding><Insets top="22" right="14" bottom="22" left="14"/></padding>
 
             <Label text="NAVIGATION" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #4a6080; -fx-padding: 0 0 8 6; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
@@ -24,8 +24,11 @@
             <Button fx:id="btnDashboard" text="Dashboard" maxWidth="Infinity" onAction="#showDashboard" style="-fx-background-color: #e8550a; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 7; -fx-cursor: hand; -fx-padding: 10 14 10 14; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
             <Button fx:id="btnReportIncident" text="Report Incident" maxWidth="Infinity" onAction="#showReportForm" style="-fx-background-color: transparent; -fx-text-fill: #b0c4d8; -fx-alignment: CENTER_LEFT; -fx-font-size: 13px; -fx-background-radius: 7; -fx-cursor: hand; -fx-padding: 10 14 10 14; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
             <Button fx:id="btnMapView" text="Incidents &amp; Map" maxWidth="Infinity" onAction="#showMapView" style="-fx-background-color: transparent; -fx-text-fill: #b0c4d8; -fx-alignment: CENTER_LEFT; -fx-font-size: 13px; -fx-background-radius: 7; -fx-cursor: hand; -fx-padding: 10 14 10 14; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+            <Button fx:id="btnProfile" text="My Profile" maxWidth="Infinity" onAction="#showProfile" style="-fx-background-color: transparent; -fx-text-fill: #b0c4d8; -fx-alignment: CENTER_LEFT; -fx-font-size: 13px; -fx-background-radius: 7; -fx-cursor: hand; -fx-padding: 10 14 10 14; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+
+            <Region minHeight="15"/>
+            <Label fx:id="adminLabel" text="ADMINISTRATION" visible="false" managed="false" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #4a6080; -fx-padding: 0 0 8 6; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
             <Button fx:id="btnManageUsers" text="Manage Users" maxWidth="Infinity" onAction="#showManageUsers" visible="false" managed="false" style="-fx-background-color: transparent; -fx-text-fill: #b0c4d8; -fx-alignment: CENTER_LEFT; -fx-font-size: 13px; -fx-background-radius: 7; -fx-cursor: hand; -fx-padding: 10 14 10 14; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-            <Button fx:id="btnAdminRequests" text="Review Requests" maxWidth="Infinity" onAction="#showAdminRequests" visible="false" managed="false" style="-fx-background-color: transparent; -fx-text-fill: #b0c4d8; -fx-alignment: CENTER_LEFT; -fx-font-size: 13px; -fx-background-radius: 7; -fx-cursor: hand; -fx-padding: 10 14 10 14; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
             <Button fx:id="btnRequestRole" text="Request Role Change" maxWidth="Infinity" onAction="#handleRequestRole" visible="false" managed="false" style="-fx-background-color: transparent; -fx-text-fill: #b0c4d8; -fx-alignment: CENTER_LEFT; -fx-font-size: 13px; -fx-background-radius: 7; -fx-cursor: hand; -fx-padding: 10 14 10 14; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
 
             <Region VBox.vgrow="ALWAYS"/>

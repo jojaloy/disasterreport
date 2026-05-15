@@ -26,13 +26,14 @@ public class HybridGeocoder {
     public CompletableFuture<String> getAddress(double lat, double lng) {
         return CompletableFuture.supplyAsync(() -> {
             try {
+                // Switch BACK to Nominatim for highly specific Street/Barangay level data
                 String urlStr = String.format(Locale.US, "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=%f&lon=%f", lat, lng);
                 URL url = new URL(urlStr);
 
-                // Using legacy HttpURLConnection to bypass modern Java 11 SSL/Proxy quirks on Mac
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
-                conn.setRequestProperty("User-Agent", "DisasterReportApp/1.0 (student@university.edu)");
+                // Nominatim requires a valid User-Agent to prevent blocking
+                conn.setRequestProperty("User-Agent", "DisasterReportSystem/1.0 (student@university.edu)");
                 conn.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(5000);
@@ -41,6 +42,8 @@ public class HybridGeocoder {
                     try (InputStream in = conn.getInputStream();
                          Scanner scanner = new Scanner(in, "UTF-8")) {
                         String response = scanner.useDelimiter("\\A").next();
+
+                        // Extract the highly specific "display_name" property
                         String address = extractJsonValue(response, "\"display_name\":\"");
                         if (address != null && !address.isEmpty()) {
                             cacheAddressOffline(lat, lng, address);

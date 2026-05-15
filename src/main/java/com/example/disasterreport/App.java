@@ -7,7 +7,6 @@ import javafx.stage.Stage;
 import com.example.disasterreport.util.DatabaseManager;
 import com.example.disasterreport.util.OfflineTileServer;
 import com.example.disasterreport.util.SyncManager;
-
 import java.io.File;
 
 public class App extends Application {
@@ -21,11 +20,8 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         DatabaseManager.getInstance();
-
-        // Ensure offline_tiles folder exists so the server doesn't crash
         new File("offline_tiles").mkdirs();
 
-        // Start background synchronization & offline map servers
         syncManager = new SyncManager();
         syncManager.startAutoSync();
 
@@ -38,6 +34,10 @@ public class App extends Application {
         stage.setScene(scene);
         stage.setMinWidth(480);
         stage.setMinHeight(600);
+
+        // ADD THIS LINE: Maximizes the window on startup
+        stage.setMaximized(true);
+
         stage.show();
     }
 
@@ -53,8 +53,11 @@ public class App extends Application {
     }
 
     public static void resizeForMain(Stage stage) {
-        stage.setWidth(MIN_WIDTH); stage.setHeight(MIN_HEIGHT);
-        stage.setMinWidth(MIN_WIDTH); stage.setMinHeight(MIN_HEIGHT);
-        stage.centerOnScreen();
+        // Keep the minimum limits so it doesn't squash, but remove the forced exact size
+        stage.setMinWidth(MIN_WIDTH);
+        stage.setMinHeight(MIN_HEIGHT);
+
+        // Force it to stay maximized (or use setFullScreen(true) if you prefer)
+        stage.setMaximized(true);
     }
 }

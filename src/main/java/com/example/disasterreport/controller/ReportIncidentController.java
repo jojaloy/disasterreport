@@ -48,9 +48,9 @@ public class ReportIncidentController implements Initializable {
 
         engine = reportMapWebView.getEngine();
         engine.setJavaScriptEnabled(true);
-        engine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        // Provide a robust User-Agent so Nominatim doesn't block the WebView
+        engine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 DisasterReportApp/1.0");
 
-        // Advanced Alert Listener to handle the WebKit networking bypass
         engine.setOnAlert(event -> {
             String data = event.getData();
             if (data != null) {
@@ -75,7 +75,6 @@ public class ReportIncidentController implements Initializable {
                     String[] coords = data.substring(13).split(",");
                     double lat = Double.parseDouble(coords[0]);
                     double lng = Double.parseDouble(coords[1]);
-                    // WebKit failed (no internet), fallback to Java offline SQLite Database
                     geocoder.getAddress(lat, lng).thenAccept(address -> {
                         Platform.runLater(() -> {
                             if (geocodingLabel != null) hideLabel(geocodingLabel);
@@ -118,13 +117,11 @@ public class ReportIncidentController implements Initializable {
                 L.Browser.any3d = false;
                 var map = L.map('map').setView([12.8797, 121.7740], 6);
                 
-                // WEBKIT NETWORKING BYPASS: WebView loads the map directly, bypassing Java network isolation.
                 var onlineUrl = 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
                 var offlineUrl = 'http://127.0.0.1:8080/tiles/{z}/{x}/{y}.png';
                 
                 var tileLayer = L.tileLayer(onlineUrl, {maxZoom: 18});
                 
-                // If WebKit loses internet, instantly swap to Java's local offline grid
                 tileLayer.on('tileerror', function(e) {
                     var fallback = offlineUrl.replace('{z}', e.coords.z).replace('{x}', e.coords.x).replace('{y}', e.coords.y);
                     if (e.tile.src !== fallback) { e.tile.src = fallback; }
@@ -139,13 +136,17 @@ public class ReportIncidentController implements Initializable {
                 var customIcon = L.divIcon({className: '', html: svgIcon, iconSize: [24,36], iconAnchor: [12,36]});
                 
                 function fetchAddress(lat, lng) {
-                    // Javascript fetches the address directly, avoiding Java's "Network Unreachable" crash
-                    fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lng + '&localityLanguage=en')
+                    // SWITCHED BACK TO NOMINATIM FOR HIGHLY SPECIFIC STREET/BARANGAY DATA
+                    fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng, {
+                        headers: { 'Accept-Language': 'en-US,en;q=0.9' }
+                    })
                     .then(function(res) { return res.json(); })
                     .then(function(data) {
-                        var addr = [data.city, data.principalSubdivision, data.countryName].filter(Boolean).join(', ');
-                        if(addr) { alert('ADDRESS_SUCCESS:' + addr); }
-                        else { alert('ADDRESS_FAIL:' + lat + ',' + lng); }
+                        if(data && data.display_name) {
+                            alert('ADDRESS_SUCCESS:' + data.display_name);
+                        } else {
+                            alert('ADDRESS_FAIL:' + lat + ',' + lng);
+                        }
                     })
                     .catch(function(err) {
                         alert('ADDRESS_FAIL:' + lat + ',' + lng);
@@ -187,12 +188,17 @@ public class ReportIncidentController implements Initializable {
         hideLabel(validationLabel); showLabel(savingLabel, "Saving…");
         Incident inc = new Incident(0, incidentTypeCombo.getValue(), locationField.getText().trim(), descriptionArea.getText().trim(), incidentDatePicker.getValue(), "Active", severityCombo.getValue() != null ? severityCombo.getValue() : "Medium", currentUsername, lat, lng);
 
+        // inside handleSubmit()...
         inc.report();
         hideLabel(savingLabel); handleClear();
         if (mainController != null) mainController.refreshDashboard();
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Incident reported successfully!");
-        alert.setHeaderText(null); alert.showAndWait();
+        // Replaced the ugly native Alert
+        com.example.disasterreport.util.ModernDialog.showMessage(
+                "Success",
+                "Incident reported successfully!",
+                false
+        );
     }
 
     @FXML private void handleClear() {

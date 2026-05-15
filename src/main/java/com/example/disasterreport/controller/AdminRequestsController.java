@@ -57,27 +57,27 @@ public class AdminRequestsController implements Initializable {
     private void handleApprove() {
         Request req = requestTable.getSelectionModel().getSelectedItem();
         if (req == null) {
-            new Alert(Alert.AlertType.WARNING, "Select a request to approve.").showAndWait();
+            com.example.disasterreport.util.ModernDialog.showMessage("Action Required", "Select a request to approve.", true);
             return;
         }
 
         if ("PASSWORD_RESET".equals(req.getType())) {
-            TextInputDialog dialog = new TextInputDialog("temp123");
-            dialog.setTitle("Approve Password Reset");
-            dialog.setHeaderText("Set a temporary password for " + req.getUsername());
-            dialog.setContentText("New Password:");
-            Optional<String> result = dialog.showAndWait();
+            java.util.Optional<String> result = com.example.disasterreport.util.ModernDialog.showTextInput(
+                    "Approve Password Reset",
+                    "Set a temporary password for " + req.getUsername() + ":",
+                    "temp123"
+            );
 
             if (result.isPresent() && !result.get().trim().isEmpty()) {
                 DatabaseManager.getInstance().updateUserPassword(req.getUsername(), result.get().trim());
                 DatabaseManager.getInstance().updateRequestStatus(req.getRequestID(), "APPROVED");
-                new Alert(Alert.AlertType.INFORMATION, "Password reset successfully! Make sure to inform the user.").showAndWait();
+                com.example.disasterreport.util.ModernDialog.showMessage("Success", "Password reset successfully! Make sure to inform the user.", false);
                 loadData();
             }
         } else if ("ROLE_CHANGE".equals(req.getType())) {
             DatabaseManager.getInstance().updateUserRoleByUsername(req.getUsername(), req.getDetails());
             DatabaseManager.getInstance().updateRequestStatus(req.getRequestID(), "APPROVED");
-            new Alert(Alert.AlertType.INFORMATION, "Role updated successfully!").showAndWait();
+            com.example.disasterreport.util.ModernDialog.showMessage("Success", "Role updated successfully!", false);
             loadData();
         }
     }
@@ -86,11 +86,11 @@ public class AdminRequestsController implements Initializable {
     private void handleReject() {
         Request req = requestTable.getSelectionModel().getSelectedItem();
         if (req == null) {
-            new Alert(Alert.AlertType.WARNING, "Select a request to reject.").showAndWait();
+            com.example.disasterreport.util.ModernDialog.showMessage("Action Required", "Select a request to reject.", true);
             return;
         }
         DatabaseManager.getInstance().updateRequestStatus(req.getRequestID(), "REJECTED");
-        new Alert(Alert.AlertType.INFORMATION, "Request rejected.").showAndWait();
+        com.example.disasterreport.util.ModernDialog.showMessage("Rejected", "Request has been rejected.", false);
         loadData();
     }
 }

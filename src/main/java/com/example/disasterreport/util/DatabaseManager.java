@@ -14,14 +14,12 @@ public class DatabaseManager {
 
     private static final String URL  = "jdbc:mysql://localhost:3306/disasterreport_db";
     private static final String USER = "root";
-    private static final String PASS = ""; // change to your MySQL password
+    private static final String PASS = "";
 
     private DatabaseManager() { connect(); }
 
     public static DatabaseManager getInstance() {
-        if (instance == null) {
-            instance = new DatabaseManager();
-        }
+        if (instance == null) instance = new DatabaseManager();
         return instance;
     }
 
@@ -29,9 +27,7 @@ public class DatabaseManager {
         try {
             connection = DriverManager.getConnection(URL, USER, PASS);
             System.out.println("Database connected successfully.");
-        } catch (SQLException e) {
-            System.out.println("Database connection failed: " + e.getMessage());
-        }
+        } catch (SQLException e) { System.out.println("Database connection failed: " + e.getMessage()); }
     }
 
     // ── User operations ───────────────────────────────────────────────────
@@ -43,178 +39,95 @@ public class DatabaseManager {
             ps.setString(2, user.getPassword());
             ps.setString(3, user.getRole());
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        } catch (SQLException e) { return false; }
     }
 
     public User validateUser(String username, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, username);
-            ps.setString(2, password);
+            ps.setString(1, username); ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return new User(
-                        rs.getInt("userID"),
-                        rs.getString("username"),
-                        rs.getString("password"),
-                        rs.getString("role")
-                );
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            if (rs.next()) return new User(rs.getInt("userID"), rs.getString("username"), rs.getString("password"), rs.getString("role"));
+        } catch (SQLException e) { e.printStackTrace(); }
         return null;
     }
-
-    // ── Incident operations ───────────────────────────────────────────────
-
-    /**
-     * INSERT a new incident (includes lat/lng if present).
-     *
-     * SQL schema expected:
-     *   ALTER TABLE incidents
-     *     ADD COLUMN latitude  DOUBLE NOT NULL DEFAULT 0,
-     *     ADD COLUMN longitude DOUBLE NOT NULL DEFAULT 0;
-     */
-    public void saveIncident(Incident inc) {
-        String sql = """
-            INSERT INTO incidents
-              (type, location, description, date, status, severity, reportedBy, latitude, longitude)
-            VALUES (?,?,?,?,?,?,?,?,?)
-            """;
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, inc.getType());
-            ps.setString(2, inc.getLocation());
-            ps.setString(3, inc.getDescription());
-            ps.setDate  (4, Date.valueOf(inc.getDate()));
-            ps.setString(5, inc.getStatus());
-            ps.setString(6, inc.getSeverity());
-            ps.setString(7, inc.getReportedBy());
-            ps.setDouble(8, inc.getLatitude());
-            ps.setDouble(9, inc.getLongitude());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** SELECT all incidents ordered by date descending. */
-    public List<Incident> getIncidents() {
-        List<Incident> list = new ArrayList<>();
-        String sql = "SELECT * FROM incidents ORDER BY date DESC";
-        try (Statement st  = connection.createStatement();
-             ResultSet rs  = st.executeQuery(sql)) {
-
-            while (rs.next()) {
-                // Gracefully handle tables that don't yet have lat/lng columns
-                double lat = 0.0, lng = 0.0;
-                try {
-                    lat = rs.getDouble("latitude");
-                    lng = rs.getDouble("longitude");
-                } catch (SQLException ignored) { /* columns not added yet */ }
-
-                list.add(new Incident(
-                        rs.getInt   ("incidentID"),
-                        rs.getString("type"),
-                        rs.getString("location"),
-                        rs.getString("description"),
-                        rs.getDate  ("date").toLocalDate(),
-                        rs.getString("status"),
-                        rs.getString("severity"),
-                        rs.getString("reportedBy"),
-                        lat, lng
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    /** UPDATE only the status field (used from IncidentListController). */
-    public void updateIncidentStatus(int id, String status) {
-        String sql = "UPDATE incidents SET status = ? WHERE incidentID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt   (2, id);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Full UPDATE — updates every editable field.
-     * Called by IncidentListController.handleUpdateStatus() after setting
-     * the new status on the model object.
-     */
-    public void updateIncident(Incident inc) {
-        String sql = """
-            UPDATE incidents
-               SET type        = ?,
-                   location    = ?,
-                   description = ?,
-                   date        = ?,
-                   status      = ?,
-                   severity    = ?,
-                   reportedBy  = ?,
-                   latitude    = ?,
-                   longitude   = ?
-             WHERE incidentID  = ?
-            """;
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, inc.getType());
-            ps.setString(2, inc.getLocation());
-            ps.setString(3, inc.getDescription());
-            ps.setDate  (4, Date.valueOf(inc.getDate()));
-            ps.setString(5, inc.getStatus());
-            ps.setString(6, inc.getSeverity());
-            ps.setString(7, inc.getReportedBy());
-            ps.setDouble(8, inc.getLatitude());
-            ps.setDouble(9, inc.getLongitude());
-            ps.setInt   (10, inc.getIncidentID());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // ── NEW: Get all users (admin panel) ────────────────────────────────────
 
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT userID, username, role FROM users ORDER BY userID";
-        try (Statement st = connection.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) {
-                list.add(new User(
-                        rs.getInt("userID"),
-                        rs.getString("username"),
-                        "",   // never expose password in list
-                        rs.getString("role")
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) list.add(new User(rs.getInt("userID"), rs.getString("username"), "", rs.getString("role")));
+        } catch (SQLException e) { e.printStackTrace(); }
         return list;
     }
 
-// ── NEW: Update a user's role (admin panel) ─────────────────────────────
-
-    public boolean updateUserRole(int userID, String newRole) {
-        String sql = "UPDATE users SET role = ? WHERE userID = ?";
+    // NEW: Delete User
+    public boolean deleteUser(int userID) {
+        String sql = "DELETE FROM users WHERE userID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, newRole);
-            ps.setInt(2, userID);
+            ps.setInt(1, userID);
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        } catch (SQLException e) { return false; }
+    }
+
+    // NEW: Full User Edit (Admin)
+    public boolean updateUserAdmin(int userID, String newUsername, String newRole, String newPassword) {
+        try {
+            if (newPassword != null && !newPassword.trim().isEmpty()) {
+                String sql = "UPDATE users SET username = ?, role = ?, password = ? WHERE userID = ?";
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setString(1, newUsername); ps.setString(2, newRole); ps.setString(3, newPassword); ps.setInt(4, userID);
+                return ps.executeUpdate() > 0;
+            } else {
+                String sql = "UPDATE users SET username = ?, role = ? WHERE userID = ?";
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setString(1, newUsername); ps.setString(2, newRole); ps.setInt(3, userID);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (SQLException e) { return false; }
+    }
+
+    // ── Incident operations ───────────────────────────────────────────────
+
+    public void saveIncident(Incident inc) {
+        String sql = "INSERT INTO incidents (type, location, description, date, status, severity, reportedBy, latitude, longitude) VALUES (?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, inc.getType()); ps.setString(2, inc.getLocation()); ps.setString(3, inc.getDescription());
+            ps.setDate(4, Date.valueOf(inc.getDate())); ps.setString(5, inc.getStatus()); ps.setString(6, inc.getSeverity());
+            ps.setString(7, inc.getReportedBy()); ps.setDouble(8, inc.getLatitude()); ps.setDouble(9, inc.getLongitude());
+            ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    public List<Incident> getIncidents() {
+        List<Incident> list = new ArrayList<>();
+        String sql = "SELECT * FROM incidents ORDER BY date DESC";
+        try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                double lat = 0.0, lng = 0.0;
+                try { lat = rs.getDouble("latitude"); lng = rs.getDouble("longitude"); } catch (SQLException ignored) { }
+                list.add(new Incident(rs.getInt("incidentID"), rs.getString("type"), rs.getString("location"), rs.getString("description"),
+                        rs.getDate("date").toLocalDate(), rs.getString("status"), rs.getString("severity"), rs.getString("reportedBy"), lat, lng));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    public void updateIncidentStatus(int id, String status) {
+        String sql = "UPDATE incidents SET status = ? WHERE incidentID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, status); ps.setInt(2, id); ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    public void updateIncident(Incident inc) {
+        String sql = "UPDATE incidents SET type=?, location=?, description=?, date=?, status=?, severity=?, reportedBy=?, latitude=?, longitude=? WHERE incidentID=?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, inc.getType()); ps.setString(2, inc.getLocation()); ps.setString(3, inc.getDescription());
+            ps.setDate(4, Date.valueOf(inc.getDate())); ps.setString(5, inc.getStatus()); ps.setString(6, inc.getSeverity());
+            ps.setString(7, inc.getReportedBy()); ps.setDouble(8, inc.getLatitude()); ps.setDouble(9, inc.getLongitude());
+            ps.setInt(10, inc.getIncidentID()); ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     // ── Requests & Security Operations ──────────────────────────────────────────
@@ -222,66 +135,50 @@ public class DatabaseManager {
     public boolean addRequest(String username, String type, String details) {
         String sql = "INSERT INTO requests(username, type, details, status) VALUES(?, ?, ?, 'PENDING')";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, username);
-            ps.setString(2, type);
-            ps.setString(3, details);
+            ps.setString(1, username); ps.setString(2, type); ps.setString(3, details);
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        } catch (SQLException e) { return false; }
     }
 
     public List<com.example.disasterreport.model.Request> getPendingRequests() {
         List<com.example.disasterreport.model.Request> list = new ArrayList<>();
         String sql = "SELECT * FROM requests WHERE status = 'PENDING' ORDER BY requestID ASC";
-        try (Statement st = connection.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+        try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                list.add(new com.example.disasterreport.model.Request(
-                        rs.getInt("requestID"),
-                        rs.getString("username"),
-                        rs.getString("type"),
-                        rs.getString("details"),
-                        rs.getString("status")
-                ));
+                list.add(new com.example.disasterreport.model.Request(rs.getInt("requestID"), rs.getString("username"),
+                        rs.getString("type"), rs.getString("details"), rs.getString("status")));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
         return list;
+    }
+
+    // NEW: Count Pending Requests
+    public int getPendingRequestsCount() {
+        String sql = "SELECT COUNT(*) FROM requests WHERE status = 'PENDING'";
+        try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {}
+        return 0;
     }
 
     public void updateRequestStatus(int requestID, String status) {
         String sql = "UPDATE requests SET status = ? WHERE requestID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt(2, requestID);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            ps.setString(1, status); ps.setInt(2, requestID); ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     public void updateUserPassword(String username, String newPassword) {
         String sql = "UPDATE users SET password = ? WHERE username = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, newPassword);
-            ps.setString(2, username);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            ps.setString(1, newPassword); ps.setString(2, username); ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     public void updateUserRoleByUsername(String username, String newRole) {
         String sql = "UPDATE users SET role = ? WHERE username = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, newRole);
-            ps.setString(2, username);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            ps.setString(1, newRole); ps.setString(2, username); ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 }

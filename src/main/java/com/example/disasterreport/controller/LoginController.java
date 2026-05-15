@@ -45,19 +45,16 @@ public class LoginController implements Initializable {
 
     @FXML
     private void handleForgotPassword() {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Forgot Password");
-        dialog.setHeaderText("Password Reset Request");
-        dialog.setContentText("Enter your username to request a reset:");
+        java.util.Optional<String> result = com.example.disasterreport.util.ModernDialog.showTextInput(
+                "Forgot Password",
+                "Enter your username to request a reset:",
+                ""
+        );
 
-        dialog.showAndWait().ifPresent(username -> {
+        result.ifPresent(username -> {
             if (!username.trim().isEmpty()) {
                 DatabaseManager.getInstance().addRequest(username.trim(), "PASSWORD_RESET", "User requested password reset");
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Request Sent");
-                alert.setHeaderText(null);
-                alert.setContentText("Your reset request has been sent. Please wait for an Admin to provide your temporary password.");
-                alert.showAndWait();
+                com.example.disasterreport.util.ModernDialog.showMessage("Request Sent", "Your reset request has been sent. Please wait for an Admin to provide your temporary password.", false);
             }
         });
     }
@@ -105,16 +102,16 @@ public class LoginController implements Initializable {
                     getClass().getResource("/com/example/disasterreport/MainView.fxml")
             );
 
-            // Load the FXML first so the controller is wired up
             javafx.scene.Parent root = loader.load();
-
-            // Resize the window BEFORE showing the new scene
             Stage stage = (Stage) loginButton.getScene().getWindow();
-            App.resizeForMain(stage);
 
-            Scene scene = new Scene(root, 1024, 680);
+            // Load the new scene WITHOUT forcing the 1024x680 dimensions
+            Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("Disaster Report System");
+
+            // Apply the maximized state AFTER the scene is set
+            App.resizeForMain(stage);
 
             MainController ctrl = loader.getController();
             ctrl.setCurrentUser(user);
