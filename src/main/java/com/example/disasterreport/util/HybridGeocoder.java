@@ -30,10 +30,13 @@ public class HybridGeocoder {
                 String urlStr = String.format(Locale.US, "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=%f&lon=%f", lat, lng);
                 URL url = new URL(urlStr);
 
+                // Inside your getAddress() method:
+
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
-                // Nominatim requires a valid User-Agent to prevent blocking
-                conn.setRequestProperty("User-Agent", "DisasterReportSystem/1.0 (student@university.edu)");
+
+                // FIX: Use a unique email address so OpenStreetMap doesn't flag you as a bot!
+                conn.setRequestProperty("User-Agent", "DisasterReportSystem/1.0 (jojaloy.capstone@gmail.com)");
                 conn.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(5000);

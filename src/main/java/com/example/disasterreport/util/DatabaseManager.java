@@ -2,7 +2,6 @@ package com.example.disasterreport.util;
 
 import com.example.disasterreport.model.Incident;
 import com.example.disasterreport.model.User;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,17 +26,13 @@ public class DatabaseManager {
         try {
             connection = DriverManager.getConnection(URL, USER, PASS);
             System.out.println("Database connected successfully.");
-        } catch (SQLException e) { System.out.println("Database connection failed: " + e.getMessage()); }
+        } catch (SQLException e) { System.out.println("Database connection failed."); }
     }
-
-    // ── User operations ───────────────────────────────────────────────────
 
     public boolean saveUser(User user) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPassword());
-            ps.setString(3, user.getRole());
+            ps.setString(1, user.getUsername()); ps.setString(2, user.getPassword()); ps.setString(3, user.getRole());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) { return false; }
     }
@@ -61,16 +56,13 @@ public class DatabaseManager {
         return list;
     }
 
-    // NEW: Delete User
     public boolean deleteUser(int userID) {
         String sql = "DELETE FROM users WHERE userID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, userID);
-            return ps.executeUpdate() > 0;
+            ps.setInt(1, userID); return ps.executeUpdate() > 0;
         } catch (SQLException e) { return false; }
     }
 
-    // NEW: Full User Edit (Admin)
     public boolean updateUserAdmin(int userID, String newUsername, String newRole, String newPassword) {
         try {
             if (newPassword != null && !newPassword.trim().isEmpty()) {
@@ -87,16 +79,20 @@ public class DatabaseManager {
         } catch (SQLException e) { return false; }
     }
 
-    // ── Incident operations ───────────────────────────────────────────────
+    // ── UPDATED FOR IMAGES ───────────────────────────────────────────────
 
     public void saveIncident(Incident inc) {
-        String sql = "INSERT INTO incidents (type, location, description, date, status, severity, reportedBy, latitude, longitude) VALUES (?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO incidents (type, location, description, date, status, severity, reportedBy, latitude, longitude, image_data) VALUES (?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, inc.getType()); ps.setString(2, inc.getLocation()); ps.setString(3, inc.getDescription());
             ps.setDate(4, Date.valueOf(inc.getDate())); ps.setString(5, inc.getStatus()); ps.setString(6, inc.getSeverity());
             ps.setString(7, inc.getReportedBy()); ps.setDouble(8, inc.getLatitude()); ps.setDouble(9, inc.getLongitude());
+            ps.setString(10, inc.getImageData());
             ps.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            System.err.println("Database Error! Did you run 'ALTER TABLE incidents ADD COLUMN image_data LONGTEXT;' in MySQL?");
+            e.printStackTrace();
+        }
     }
 
     public List<Incident> getIncidents() {
@@ -104,10 +100,10 @@ public class DatabaseManager {
         String sql = "SELECT * FROM incidents ORDER BY date DESC";
         try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                double lat = 0.0, lng = 0.0;
-                try { lat = rs.getDouble("latitude"); lng = rs.getDouble("longitude"); } catch (SQLException ignored) { }
+                double lat = 0.0, lng = 0.0; String img = "";
+                try { lat = rs.getDouble("latitude"); lng = rs.getDouble("longitude"); img = rs.getString("image_data"); } catch (SQLException ignored) { }
                 list.add(new Incident(rs.getInt("incidentID"), rs.getString("type"), rs.getString("location"), rs.getString("description"),
-                        rs.getDate("date").toLocalDate(), rs.getString("status"), rs.getString("severity"), rs.getString("reportedBy"), lat, lng));
+                        rs.getDate("date").toLocalDate(), rs.getString("status"), rs.getString("severity"), rs.getString("reportedBy"), lat, lng, img));
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
@@ -121,22 +117,20 @@ public class DatabaseManager {
     }
 
     public void updateIncident(Incident inc) {
-        String sql = "UPDATE incidents SET type=?, location=?, description=?, date=?, status=?, severity=?, reportedBy=?, latitude=?, longitude=? WHERE incidentID=?";
+        String sql = "UPDATE incidents SET type=?, location=?, description=?, date=?, status=?, severity=?, reportedBy=?, latitude=?, longitude=?, image_data=? WHERE incidentID=?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, inc.getType()); ps.setString(2, inc.getLocation()); ps.setString(3, inc.getDescription());
             ps.setDate(4, Date.valueOf(inc.getDate())); ps.setString(5, inc.getStatus()); ps.setString(6, inc.getSeverity());
             ps.setString(7, inc.getReportedBy()); ps.setDouble(8, inc.getLatitude()); ps.setDouble(9, inc.getLongitude());
-            ps.setInt(10, inc.getIncidentID()); ps.executeUpdate();
+            ps.setString(10, inc.getImageData()); ps.setInt(11, inc.getIncidentID());
+            ps.executeUpdate();
         } catch (SQLException e) { e.printStackTrace(); }
     }
-
-    // ── Requests & Security Operations ──────────────────────────────────────────
 
     public boolean addRequest(String username, String type, String details) {
         String sql = "INSERT INTO requests(username, type, details, status) VALUES(?, ?, ?, 'PENDING')";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, username); ps.setString(2, type); ps.setString(3, details);
-            return ps.executeUpdate() > 0;
+            ps.setString(1, username); ps.setString(2, type); ps.setString(3, details); return ps.executeUpdate() > 0;
         } catch (SQLException e) { return false; }
     }
 
@@ -152,7 +146,6 @@ public class DatabaseManager {
         return list;
     }
 
-    // NEW: Count Pending Requests
     public int getPendingRequestsCount() {
         String sql = "SELECT COUNT(*) FROM requests WHERE status = 'PENDING'";
         try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {

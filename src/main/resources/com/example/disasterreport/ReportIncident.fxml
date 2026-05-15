@@ -3,12 +3,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<!--
-    ReportIncident.fxml — Updated color scheme:
-    White background, #0f1623 text, #e8550a primary button
--->
 <?import javafx.scene.web.WebView?>
+<?import javafx.scene.image.ImageView?>
+
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.disasterreport.controller.ReportIncidentController"
@@ -16,102 +13,36 @@
       style="-fx-background-color: white;">
     <padding><Insets top="0" right="0" bottom="0" left="0"/></padding>
 
-    <!-- Header -->
-    <VBox style="-fx-background-color: white;
-                 -fx-border-color: #e2e5ea;
-                 -fx-border-width: 0 0 1 0;
-                 -fx-padding: 18 26 18 26;">
-        <Label text="Report Incident"
-               style="-fx-font-size: 20px;
-                      -fx-font-weight: bold;
-                      -fx-text-fill: #0f1623;
-                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-        <Label text="Fill in the details below to report a new disaster incident."
-               style="-fx-font-size: 13px;
-                      -fx-text-fill: #6b7280;
-                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+    <VBox style="-fx-background-color: white; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 18 26 18 26;">
+        <Label text="Report Incident" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f1623; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+        <Label text="Fill in the details below to report a new disaster incident." style="-fx-font-size: 13px; -fx-text-fill: #6b7280; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
     </VBox>
 
-    <!-- Form Card -->
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                style="-fx-background-color: transparent; -fx-background: transparent;">
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox spacing="16">
             <padding><Insets top="22" right="26" bottom="26" left="26"/></padding>
 
-            <VBox spacing="16"
-                  style="-fx-background-color: white;
-                         -fx-background-radius: 10;
-                         -fx-border-color: #e2e5ea;
-                         -fx-border-radius: 10;
-                         -fx-border-width: 1;
-                         -fx-padding: 26;
-                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);">
+            <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e2e5ea; -fx-border-radius: 10; -fx-border-width: 1; -fx-padding: 26; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);">
 
-                <!-- Row 1: Type + Severity -->
                 <HBox spacing="16">
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Incident Type *"
-                               style="-fx-font-size: 12px;
-                                      -fx-font-weight: bold;
-                                      -fx-text-fill: #374151;
-                                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-                        <ComboBox fx:id="incidentTypeCombo" maxWidth="Infinity"
-                                  promptText="Select type..."
-                                  style="-fx-background-color: #f9fafb;
-                                         -fx-border-color: #d1d5db;
-                                         -fx-border-radius: 6;
-                                         -fx-background-radius: 6;
-                                         -fx-font-size: 13px;
-                                         -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <Label text="Incident Type *" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <ComboBox fx:id="incidentTypeCombo" maxWidth="Infinity" promptText="Select type..." style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                     </VBox>
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Severity"
-                               style="-fx-font-size: 12px;
-                                      -fx-font-weight: bold;
-                                      -fx-text-fill: #374151;
-                                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-                        <ComboBox fx:id="severityCombo" maxWidth="Infinity"
-                                  promptText="Select severity..."
-                                  style="-fx-background-color: #f9fafb;
-                                         -fx-border-color: #d1d5db;
-                                         -fx-border-radius: 6;
-                                         -fx-background-radius: 6;
-                                         -fx-font-size: 13px;
-                                         -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <Label text="Severity" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <ComboBox fx:id="severityCombo" maxWidth="Infinity" promptText="Select severity..." style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                     </VBox>
                 </HBox>
 
-                <!-- Row 2: Location + Date -->
                 <HBox spacing="16">
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Location *"
-                               style="-fx-font-size: 12px;
-                                      -fx-font-weight: bold;
-                                      -fx-text-fill: #374151;
-                                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-                        <TextField fx:id="locationField"
-                                   promptText="e.g. Cebu City, Brgy. Lahug"
-                                   style="-fx-background-color: #f9fafb;
-                                          -fx-border-color: #d1d5db;
-                                          -fx-border-radius: 6;
-                                          -fx-background-radius: 6;
-                                          -fx-padding: 9 13 9 13;
-                                          -fx-font-size: 13px;
-                                          -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <Label text="Location *" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <TextField fx:id="locationField" promptText="e.g. Cebu City, Brgy. Lahug" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 9 13 9 13; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                     </VBox>
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Date *"
-                               style="-fx-font-size: 12px;
-                                      -fx-font-weight: bold;
-                                      -fx-text-fill: #374151;
-                                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-                        <DatePicker fx:id="incidentDatePicker" maxWidth="Infinity"
-                                    style="-fx-background-color: #f9fafb;
-                                           -fx-border-color: #d1d5db;
-                                           -fx-border-radius: 6;
-                                           -fx-background-radius: 6;
-                                           -fx-font-size: 13px;
-                                           -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <Label text="Date *" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <DatePicker fx:id="incidentDatePicker" maxWidth="Infinity" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                     </VBox>
                 </HBox>
 
@@ -122,110 +53,39 @@
                     </Label>
                 </StackPane>
 
-                <!-- Row 3: Latitude + Longitude -->
                 <HBox spacing="16">
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Latitude"
-                               style="-fx-font-size: 12px;
-                                      -fx-font-weight: bold;
-                                      -fx-text-fill: #374151;
-                                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-                        <TextField fx:id="latitudeField"
-                                   promptText="e.g. 10.3157"
-                                   style="-fx-background-color: #f9fafb;
-                                          -fx-border-color: #d1d5db;
-                                          -fx-border-radius: 6;
-                                          -fx-background-radius: 6;
-                                          -fx-padding: 9 13 9 13;
-                                          -fx-font-size: 13px;
-                                          -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <Label text="Latitude" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <TextField fx:id="latitudeField" promptText="e.g. 10.3157" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 9 13 9 13; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                     </VBox>
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Longitude"
-                               style="-fx-font-size: 12px;
-                                      -fx-font-weight: bold;
-                                      -fx-text-fill: #374151;
-                                      -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-                        <TextField fx:id="longitudeField"
-                                   promptText="e.g. 123.8854"
-                                   style="-fx-background-color: #f9fafb;
-                                          -fx-border-color: #d1d5db;
-                                          -fx-border-radius: 6;
-                                          -fx-background-radius: 6;
-                                          -fx-padding: 9 13 9 13;
-                                          -fx-font-size: 13px;
-                                          -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <Label text="Longitude" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                        <TextField fx:id="longitudeField" promptText="e.g. 123.8854" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 9 13 9 13; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                     </VBox>
                 </HBox>
 
-                <!-- Coordinates tip -->
-                <Label text="💡 Right-click any point on Google Maps → 'What's here?' to get coordinates."
-                       wrapText="true"
-                       style="-fx-font-size: 11px;
-                              -fx-text-fill: #9ca3af;
-                              -fx-background-color: #f9fafb;
-                              -fx-background-radius: 5;
-                              -fx-padding: 7 10 7 10;
-                              -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                <Label text="💡 Right-click any point on Google Maps → 'What's here?' to get coordinates." wrapText="true" style="-fx-font-size: 11px; -fx-text-fill: #9ca3af; -fx-background-color: #f9fafb; -fx-background-radius: 5; -fx-padding: 7 10 7 10; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
 
-                <!-- Description -->
                 <VBox spacing="6">
-                    <Label text="Description"
-                           style="-fx-font-size: 12px;
-                                  -fx-font-weight: bold;
-                                  -fx-text-fill: #374151;
-                                  -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-                    <TextArea fx:id="descriptionArea"
-                              promptText="Provide additional details about the incident..."
-                              prefRowCount="4" wrapText="true"
-                              style="-fx-background-color: #f9fafb;
-                                     -fx-border-color: #d1d5db;
-                                     -fx-border-radius: 6;
-                                     -fx-background-radius: 6;
-                                     -fx-font-size: 13px;
-                                     -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                    <Label text="Description" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                    <TextArea fx:id="descriptionArea" promptText="Provide additional details about the incident..." prefRowCount="4" wrapText="true" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                 </VBox>
 
-                <!-- Feedback Labels -->
-                <Label fx:id="validationLabel" text="" wrapText="true"
-                       style="-fx-text-fill: #dc2626;
-                              -fx-font-size: 12px;
-                              -fx-background-color: #fff5f5;
-                              -fx-background-radius: 5;
-                              -fx-padding: 6 10 6 10;
-                              -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"
-                       visible="false" managed="false"/>
-                <Label fx:id="savingLabel" text="Saving…" wrapText="true"
-                       style="-fx-text-fill: #e8550a;
-                              -fx-font-size: 12px;
-                              -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"
-                       visible="false" managed="false"/>
+                <VBox spacing="6" style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 12;">
+                    <Label text="Attach Photo (Optional)" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="📷 Browse Files..." onAction="#handleAttachPhoto" style="-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-radius: 4; -fx-cursor: hand;"/>
+                        <Label fx:id="fileNameLabel" text="No file selected" style="-fx-text-fill: #6b7280; -fx-font-size: 12px;"/>
+                    </HBox>
+                    <ImageView fx:id="imagePreview" fitWidth="150" preserveRatio="true" visible="false" managed="false" style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);"/>
+                </VBox>
 
-                <!-- Buttons -->
+                <Label fx:id="validationLabel" text="" wrapText="true" style="-fx-text-fill: #dc2626; -fx-font-size: 12px; -fx-background-color: #fff5f5; -fx-background-radius: 5; -fx-padding: 6 10 6 10; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;" visible="false" managed="false"/>
+                <Label fx:id="savingLabel" text="Saving…" wrapText="true" style="-fx-text-fill: #e8550a; -fx-font-size: 12px; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;" visible="false" managed="false"/>
+
                 <HBox spacing="12" alignment="CENTER_RIGHT">
-                    <!-- Secondary: outlined -->
-                    <Button text="Clear"
-                            onAction="#handleClear"
-                            style="-fx-background-color: white;
-                                   -fx-text-fill: #374151;
-                                   -fx-border-color: #d1d5db;
-                                   -fx-border-radius: 6;
-                                   -fx-background-radius: 6;
-                                   -fx-cursor: hand;
-                                   -fx-font-size: 13px;
-                                   -fx-padding: 9 22 9 22;
-                                   -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
-                    <!-- Primary: orange-red -->
-                    <Button text="Submit Report"
-                            onAction="#handleSubmit"
-                            style="-fx-background-color: #e8550a;
-                                   -fx-text-fill: white;
-                                   -fx-font-size: 13px;
-                                   -fx-font-weight: bold;
-                                   -fx-background-radius: 6;
-                                   -fx-cursor: hand;
-                                   -fx-padding: 9 22 9 22;
-                                   -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                    <Button text="Clear" onAction="#handleClear" style="-fx-background-color: white; -fx-text-fill: #374151; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 9 22 9 22; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
+                    <Button text="Submit Report" onAction="#handleSubmit" style="-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 9 22 9 22; -fx-font-family: 'Segoe UI', 'Arial', sans-serif;"/>
                 </HBox>
 
             </VBox>

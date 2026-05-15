@@ -4,6 +4,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -18,19 +20,12 @@ public class ModernDialog {
     private static Stage createBaseStage(String titleText, VBox contentBox) {
         Stage stage = new Stage();
 
-        // CRITICAL MAC FULLSCREEN FIX:
-        // We find the main application window and set it as the "Owner".
-        // This forces macOS to float the popup on top of the current page instead of opening a new tab.
         Window owner = Window.getWindows().stream()
-                .filter(Window::isFocused)
-                .findFirst()
+                .filter(Window::isFocused).findFirst()
                 .orElseGet(() -> Window.getWindows().stream().findFirst().orElse(null));
 
-        if (owner != null) {
-            stage.initOwner(owner);
-        }
+        if (owner != null) stage.initOwner(owner);
 
-        // Lock the background so the user has to interact with the popup
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initStyle(StageStyle.TRANSPARENT);
 
@@ -70,10 +65,29 @@ public class ModernDialog {
         btnBox.setAlignment(Pos.CENTER_RIGHT);
 
         content.getChildren().addAll(msgLabel, btnBox);
-
         Stage stage = createBaseStage(title, content);
         btn.setOnAction(e -> stage.close());
+        stage.showAndWait();
+    }
 
+    // NEW: Image Viewer Popup
+    public static void showImagePopup(String title, Image image) {
+        VBox content = new VBox(20);
+        content.setAlignment(Pos.CENTER);
+
+        ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(true);
+        // Constrain the size so it fits nicely on screen
+        imageView.setFitWidth(600);
+        imageView.setFitHeight(450);
+        imageView.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 4);");
+
+        Button btn = new Button("Close Image");
+        btn.setStyle("-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 8 24;");
+
+        content.getChildren().addAll(imageView, btn);
+        Stage stage = createBaseStage(title, content);
+        btn.setOnAction(e -> stage.close());
         stage.showAndWait();
     }
 
@@ -90,24 +104,17 @@ public class ModernDialog {
 
         Button cancelBtn = new Button("Cancel");
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #374151; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-cursor: hand; -fx-padding: 8 16;");
-
         Button confirmBtn = new Button("Confirm");
         confirmBtn.setStyle("-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 8 16;");
 
         HBox btnBox = new HBox(12, cancelBtn, confirmBtn);
         btnBox.setAlignment(Pos.CENTER_RIGHT);
-
         content.getChildren().addAll(msgLabel, combo, btnBox);
-
         Stage stage = createBaseStage(title, content);
 
         final String[] result = {null};
         cancelBtn.setOnAction(e -> stage.close());
-        confirmBtn.setOnAction(e -> {
-            result[0] = combo.getValue();
-            stage.close();
-        });
-
+        confirmBtn.setOnAction(e -> { result[0] = combo.getValue(); stage.close(); });
         stage.showAndWait();
         return Optional.ofNullable(result[0]);
     }
@@ -122,24 +129,17 @@ public class ModernDialog {
 
         Button cancelBtn = new Button("Cancel");
         cancelBtn.setStyle("-fx-background-color: white; -fx-text-fill: #374151; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-cursor: hand; -fx-padding: 8 16;");
-
         Button confirmBtn = new Button("Submit");
         confirmBtn.setStyle("-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 8 16;");
 
         HBox btnBox = new HBox(12, cancelBtn, confirmBtn);
         btnBox.setAlignment(Pos.CENTER_RIGHT);
-
         content.getChildren().addAll(msgLabel, input, btnBox);
-
         Stage stage = createBaseStage(title, content);
 
         final String[] result = {null};
         cancelBtn.setOnAction(e -> stage.close());
-        confirmBtn.setOnAction(e -> {
-            result[0] = input.getText();
-            stage.close();
-        });
-
+        confirmBtn.setOnAction(e -> { result[0] = input.getText(); stage.close(); });
         stage.showAndWait();
         return Optional.ofNullable(result[0]);
     }
