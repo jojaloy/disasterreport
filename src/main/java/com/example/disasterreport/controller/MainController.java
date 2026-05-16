@@ -287,7 +287,7 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/disasterreport/LoginView.fxml"));
             javafx.scene.Parent root = loader.load();
             Stage stage = (Stage) contentArea.getScene().getWindow();
-            stage.setMaximized(false);
+            stage.setMaximized(true);
             stage.setMinWidth(480); stage.setMinHeight(600);
             stage.setWidth(480); stage.setHeight(600);
             stage.centerOnScreen();

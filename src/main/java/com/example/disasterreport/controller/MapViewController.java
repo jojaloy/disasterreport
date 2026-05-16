@@ -39,8 +39,9 @@ public class MapViewController implements Initializable {
 
     // UI Panels & Toggles
     @FXML private VBox listPanel, detailsPanel;
-    @FXML private Button btnShowList, btnUpdateStatus, btnViewPhoto;
+    @FXML private Button btnShowList, btnShowDetails, btnUpdateStatus, btnViewPhoto;
     private boolean isListVisible = true;
+    private boolean isDetailsCollapsed = false;
 
     @FXML private Label markerCountLabel, detIdLabel, detTypeLabel, detLocationLabel, detDateLabel, detReporterLabel, detDescLabel, detStatusBadge, detSeverityBadge;
 
@@ -48,6 +49,8 @@ public class MapViewController implements Initializable {
     @FXML private StackPane statusUpdateOverlay;
     @FXML private Label updateOverlaySubtitle;
     @FXML private ComboBox<String> updateStatusCombo;
+
+
 
     private WebEngine engine;
     private ObservableList<Incident> allIncidents;
@@ -229,8 +232,14 @@ public class MapViewController implements Initializable {
     public void showIncidentDetailsPanel(Incident inc) {
         this.currentSelectedIncident = inc;
         Platform.runLater(() -> {
+            // Force the panel to open and hide the floating button
+            isDetailsCollapsed = false;
             detailsPanel.setVisible(true);
             detailsPanel.setManaged(true);
+            btnShowDetails.setVisible(false);
+            btnShowDetails.setManaged(false);
+
+            // Populate data...
             detIdLabel.setText("Incident #" + inc.getIncidentID());
             detTypeLabel.setText(inc.getType());
             detLocationLabel.setText(inc.getLocation());
@@ -248,6 +257,21 @@ public class MapViewController implements Initializable {
 
             if (mapReady) { flyToIncident(inc); } else { pendingDetailView = inc; }
         });
+    }
+
+    @FXML private void closeDetailsPanel() {
+        // Completely hide everything and deselect the incident
+        detailsPanel.setVisible(false);
+        detailsPanel.setManaged(false);
+        btnShowDetails.setVisible(false);
+        btnShowDetails.setManaged(false);
+        isDetailsCollapsed = false;
+        currentSelectedIncident = null;
+
+        incidentTable.getSelectionModel().clearSelection();
+
+        // Zoom back out to the country view
+        try { engine.executeScript("map.flyTo([" + CENTER_LAT + ", " + CENTER_LNG + "], " + ZOOM + ", { animate: true });"); } catch (Exception e) {}
     }
 
     @FXML private void handleViewPhoto() {
@@ -271,8 +295,6 @@ public class MapViewController implements Initializable {
             engine.executeScript("map.flyTo([" + lat + ", " + lng + "], 18, { animate: true, duration: 1.5 });");
         } catch (Exception e) {}
     }
-
-    @FXML private void closeDetailsPanel() { detailsPanel.setVisible(false); detailsPanel.setManaged(false); incidentTable.getSelectionModel().clearSelection(); try { engine.executeScript("map.flyTo([" + CENTER_LAT + ", " + CENTER_LNG + "], " + ZOOM + ", { animate: true });"); } catch (Exception e) {} }
 
     @FXML private void handleUpdateStatus() {
         if (currentSelectedIncident == null) return;
@@ -327,7 +349,91 @@ public class MapViewController implements Initializable {
 
     private String buildMapHtml() {
         return """
-            <!DOCTYPE html><html><head><meta charset='utf-8'/><link rel='stylesheet' href='leaflet.css'/><style>html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #e5e7eb; font-family: 'Segoe UI', Arial, sans-serif; } .custom-tooltip { font-weight: bold; padding: 4px 8px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border: none; } .leaflet-interactive { cursor: pointer !important; }</style></head><body><div id='map'></div><script src='leaflet.js'></script><script>L.Browser.any3d = false; var map = L.map('map', { center: [12.8797, 121.7740], zoom: 6, zoomControl: true, scrollWheelZoom: true, doubleClickZoom: true }); var onlineUrl = 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'; var offlineUrl = 'http://127.0.0.1:8080/tiles/{z}/{x}/{y}.png'; var tileLayer = L.tileLayer(onlineUrl, { maxZoom: 18, minZoom: 2, keepBuffer: 4 }); tileLayer.on('tileerror', function(e) { var fallback = offlineUrl.replace('{z}', e.coords.z).replace('{x}', e.coords.x).replace('{y}', e.coords.y); if (e.tile.src !== fallback) { e.tile.src = fallback; } }); tileLayer.addTo(map); window.addEventListener('load', function() { setTimeout(function(){ map.invalidateSize(); }, 250); }); window.addEventListener('resize', function(){ map.invalidateSize(); }); var markerLayer = L.layerGroup().addTo(map); function renderAll(data) { markerLayer.clearLayers(); data.forEach(function(d) { var iconHtml = '<div style="width:16px;height:16px;border-radius:50%;background:'+d.color+';border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.4);"></div>'; var icon = L.divIcon({className: '', html: iconHtml, iconSize: [16,16], iconAnchor: [8,8]}); var m = L.marker([d.lat, d.lng], {icon: icon}).addTo(markerLayer); m.bindTooltip(d.type + ' &mdash; ' + d.loc, {direction: 'top', offset: [0, -10], className: 'custom-tooltip'}); m.on('click', function() { alert('GO_TO_DETAILS:' + d.id); }); }); } </script></body></html>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='utf-8'/>
+                <link rel='stylesheet' href='leaflet.css'/>
+                <style>
+                    html, body, #map { 
+                        height: 100%; 
+                        width: 100%; 
+                        margin: 0; 
+                        padding: 0; 
+                        background: #e5e7eb; 
+                        font-family: 'Segoe UI', Arial, sans-serif; 
+                    } 
+                    .custom-tooltip { 
+                        font-weight: bold; 
+                        padding: 4px 8px; 
+                        border-radius: 4px; 
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+                        border: none; 
+                    } 
+                    .leaflet-interactive { 
+                        cursor: pointer !important; 
+                    }
+                </style>
+            </head>
+            <body>
+                <div id='map'></div>
+                
+                <script src='leaflet.js'></script>
+                <script>
+                    L.Browser.any3d = false; 
+                    
+                    var map = L.map('map', { 
+                        center: [12.8797, 121.7740], 
+                        zoom: 6, 
+                        zoomControl: true, 
+                        scrollWheelZoom: true, 
+                        doubleClickZoom: true 
+                    }); 
+                    
+                    var onlineUrl = 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'; 
+                    var offlineUrl = 'http://127.0.0.1:8080/tiles/{z}/{x}/{y}.png'; 
+                    var tileLayer = L.tileLayer(onlineUrl, { maxZoom: 18, minZoom: 2, keepBuffer: 4 }); 
+                    
+                    // Offline Fallback Logic
+                    tileLayer.on('tileerror', function(e) { 
+                        var fallback = offlineUrl.replace('{z}', e.coords.z).replace('{x}', e.coords.x).replace('{y}', e.coords.y); 
+                        if (e.tile.src !== fallback) { 
+                            e.tile.src = fallback; 
+                        } 
+                    }); 
+                    
+                    tileLayer.addTo(map); 
+                    
+                    // Handle resizing issues when JavaFX panels open/close
+                    window.addEventListener('load', function() { 
+                        setTimeout(function(){ map.invalidateSize(); }, 250); 
+                    }); 
+                    
+                    window.addEventListener('resize', function(){ 
+                        map.invalidateSize(); 
+                    }); 
+                    
+                    var markerLayer = L.layerGroup().addTo(map); 
+                    
+                    // Draw the pins from Java
+                    function renderAll(data) { 
+                        markerLayer.clearLayers(); 
+                        data.forEach(function(d) { 
+                            var iconHtml = '<div style="width:16px;height:16px;border-radius:50%;background:'+d.color+';border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.4);"></div>'; 
+                            var icon = L.divIcon({className: '', html: iconHtml, iconSize: [16,16], iconAnchor: [8,8]}); 
+                            var m = L.marker([d.lat, d.lng], {icon: icon}).addTo(markerLayer); 
+                            
+                            m.bindTooltip(d.type + ' &mdash; ' + d.loc, {direction: 'top', offset: [0, -10], className: 'custom-tooltip'}); 
+                            
+                            // Send the click back to Java
+                            m.on('click', function() { 
+                                alert('GO_TO_DETAILS:' + d.id); 
+                            }); 
+                        }); 
+                    } 
+                </script>
+            </body>
+            </html>
             """;
     }
 
@@ -355,5 +461,26 @@ public class MapViewController implements Initializable {
             default -> { bg = "#f3f4f6"; fg = "#6b7280"; }
         }
         return String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-size: 10px; -fx-font-weight: bold; -background-radius: 20; -fx-padding: 3 8;", bg, fg);
+    }
+
+    @FXML private void toggleDetails() {
+        if (currentSelectedIncident == null) return; // Do nothing if no incident is active
+
+        isDetailsCollapsed = !isDetailsCollapsed;
+
+        // Hide/Show the right panel
+        detailsPanel.setVisible(!isDetailsCollapsed);
+        detailsPanel.setManaged(!isDetailsCollapsed);
+
+        // Hide/Show the floating button
+        btnShowDetails.setVisible(isDetailsCollapsed);
+        btnShowDetails.setManaged(isDetailsCollapsed);
+
+        // Force map to recalculate its size so it expands to fill the empty space
+        if (mapReady) {
+            PauseTransition pause = new PauseTransition(Duration.millis(50));
+            pause.setOnFinished(e -> engine.executeScript("map.invalidateSize();"));
+            pause.play();
+        }
     }
 }

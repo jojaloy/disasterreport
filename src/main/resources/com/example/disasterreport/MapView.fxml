@@ -52,14 +52,16 @@
         <StackPane HBox.hgrow="ALWAYS">
             <WebView fx:id="mapWebView" />
 
-            <Button fx:id="btnShowList" text="▶ List" onAction="#toggleList" visible="false" managed="false" StackPane.alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-border-color: #e2e5ea; -fx-border-width: 1 1 1 0; -fx-background-radius: 0 6 6 0; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 2, 0); -fx-cursor: hand; -fx-padding: 10 8; -fx-font-weight: bold; -fx-text-fill: #374151;">
-                <StackPane.margin><Insets left="0"/></StackPane.margin>
-            </Button>
+            <Button fx:id="btnShowList" text="▶ List" onAction="#toggleList" visible="false" managed="false" StackPane.alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-border-color: #e2e5ea; -fx-border-width: 1 1 1 0; -fx-background-radius: 0 6 6 0; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 2, 0); -fx-cursor: hand; -fx-padding: 10 8; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+
+            <Button fx:id="btnShowDetails" text="◀ Details" onAction="#toggleDetails" visible="false" managed="false" StackPane.alignment="CENTER_RIGHT" style="-fx-background-color: white; -fx-border-color: #e2e5ea; -fx-border-width: 1 0 1 1; -fx-background-radius: 6 0 0 6; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, -2, 0); -fx-cursor: hand; -fx-padding: 10 8; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
 
             <VBox fx:id="detailsPanel" visible="false" managed="false" StackPane.alignment="CENTER_RIGHT" style="-fx-background-color: white; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 0 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, -2, 0);" minWidth="280" maxWidth="280">
-                <HBox alignment="CENTER_LEFT" style="-fx-background-color: #fafbfc; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 12 16 12 16;">
+
+                <HBox alignment="CENTER_LEFT" spacing="5" style="-fx-background-color: #fafbfc; -fx-border-color: #e2e5ea; -fx-border-width: 0 0 1 0; -fx-padding: 12 16 12 16;">
                     <Label text="Incident Details" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1f2937;"/>
                     <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="Hide ▶" onAction="#toggleDetails" style="-fx-background-color: transparent; -fx-text-fill: #6b7280; -fx-cursor: hand; -fx-font-size: 12px;"/>
                     <Button text="✕" onAction="#closeDetailsPanel" style="-fx-background-color: transparent; -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 14px;"/>
                 </HBox>
 
