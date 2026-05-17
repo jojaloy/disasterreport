@@ -75,15 +75,26 @@ public class ReportIncidentController implements Initializable {
                     });
                 } else if (data.startsWith("ADDRESS_SUCCESS:")) {
                     String address = data.substring(16);
-                    Platform.runLater(() -> { if (geocodingLabel != null) hideLabel(geocodingLabel); locationField.setText(address); });
+                    Platform.runLater(() -> {
+                        if (geocodingLabel != null) hideLabel(geocodingLabel);
+                        locationField.setText(address);
+                    });
                 } else if (data.startsWith("ADDRESS_FAIL:")) {
+                    // 1. Extract the coordinates from the JavaScript alert
                     String[] coords = data.substring(13).split(",");
-                    geocoder.getAddress(Double.parseDouble(coords[0]), Double.parseDouble(coords[1])).thenAccept(address -> {
-                        Platform.runLater(() -> { if (geocodingLabel != null) hideLabel(geocodingLabel); locationField.setText(address); });
+                    double lat = Double.parseDouble(coords[0]);
+                    double lng = Double.parseDouble(coords[1]);
+
+                    // 2. Call our new Java background thread to find the address
+                    geocoder.getAddress(lat, lng, newAddress -> {
+                        // 3. Update the UI safely
+                        locationField.setText(newAddress);
+                        if (geocodingLabel != null) hideLabel(geocodingLabel);
                     });
                 }
             }
-        });
+        }); // <-- This closing bracket was missing!
+
         try { loadMapPage(); } catch (Exception e) { e.printStackTrace(); }
     }
 

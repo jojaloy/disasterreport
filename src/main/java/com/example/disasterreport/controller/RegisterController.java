@@ -1,6 +1,7 @@
 package com.example.disasterreport.controller;
 
-import com.example.disasterreport.model.User;
+import com.example.disasterreport.model.Reporter; // OOP UPDATE: Import Reporter
+import com.example.disasterreport.util.DatabaseManager; // OOP UPDATE: Import DB Manager
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -59,13 +60,14 @@ public class RegisterController implements Initializable {
             return;
         }
 
-        // ── Persist (HARDCODED AS REPORTER) ────────────────────────────────
-        User newUser = new User(0, username, password, "reporter");
-        boolean registered = newUser.register();
+        // ── Persist (OOP UPDATE: Generate a Reporter Object) ───────────────
+        // ID is 0 (auto-incremented by DB), default Trust Score is 100
+        Reporter newReporter = new Reporter(0, username, password, 100);
 
-        // inside handleRegister()...
+        // Pass the object directly to our DatabaseManager
+        boolean registered = DatabaseManager.getInstance().saveUser(newReporter);
+
         if (registered) {
-            // Replaced the ugly native Alert
             com.example.disasterreport.util.ModernDialog.showMessage(
                     "Registration Successful",
                     "Account created successfully! You will now be redirected to the login page.",

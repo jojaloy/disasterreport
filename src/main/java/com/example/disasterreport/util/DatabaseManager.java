@@ -1,7 +1,7 @@
 package com.example.disasterreport.util;
 
-import com.example.disasterreport.model.Incident;
-import com.example.disasterreport.model.User;
+import com.example.disasterreport.model.*;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,29 +29,72 @@ public class DatabaseManager {
         } catch (SQLException e) { System.out.println("Database connection failed."); }
     }
 
+    // UPDATED: Now uses user.getRoleName() due to the abstract class change
     public boolean saveUser(User user) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, user.getUsername()); ps.setString(2, user.getPassword()); ps.setString(3, user.getRole());
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword());
+            ps.setString(3, user.getRoleName());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) { return false; }
     }
 
+    // UPDATED: The Object Factory for login
     public User validateUser(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, username); ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return new User(rs.getInt("userID"), rs.getString("username"), rs.getString("password"), rs.getString("role"));
-        } catch (SQLException e) { e.printStackTrace(); }
+        String query = "SELECT * FROM users WHERE username = ? AND password = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int id = rs.getInt("userID");
+                String user = rs.getString("username");
+                String pass = rs.getString("password");
+                String role = rs.getString("role");
+
+                return switch (role.toLowerCase()) {
+                    case "admin" -> new Admin(id, user, pass);
+                    case "responder" -> {
+                        String agency = rs.getString("agency");
+                        yield new Responder(id, user, pass, agency != null ? agency : "Unknown Agency");
+                    }
+                    default -> {
+                        int trust = rs.getInt("trust_score");
+                        yield new Reporter(id, user, pass, trust);
+                    }
+                };
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
+    // UPDATED: The Object Factory for the Admin Dashboard Table
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        String sql = "SELECT userID, username, role FROM users ORDER BY userID";
+        String sql = "SELECT userID, username, role, agency, trust_score FROM users ORDER BY userID";
+
         try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) list.add(new User(rs.getInt("userID"), rs.getString("username"), "", rs.getString("role")));
+            while (rs.next()) {
+                int id = rs.getInt("userID");
+                String user = rs.getString("username");
+                String role = rs.getString("role");
+
+                switch (role.toLowerCase()) {
+                    case "admin" -> list.add(new Admin(id, user, ""));
+                    case "responder" -> {
+                        String agency = rs.getString("agency");
+                        list.add(new Responder(id, user, "", agency != null ? agency : "Unknown Agency"));
+                    }
+                    default -> {
+                        int trust = rs.getInt("trust_score");
+                        list.add(new Reporter(id, user, "", trust));
+                    }
+                }
+            }
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
     }
@@ -78,8 +121,6 @@ public class DatabaseManager {
             }
         } catch (SQLException e) { return false; }
     }
-
-    // ── UPDATED FOR IMAGES ───────────────────────────────────────────────
 
     public void saveIncident(Incident inc) {
         String sql = "INSERT INTO incidents (type, location, description, date, status, severity, reportedBy, latitude, longitude, image_data) VALUES (?,?,?,?,?,?,?,?,?,?)";
@@ -134,12 +175,12 @@ public class DatabaseManager {
         } catch (SQLException e) { return false; }
     }
 
-    public List<com.example.disasterreport.model.Request> getPendingRequests() {
-        List<com.example.disasterreport.model.Request> list = new ArrayList<>();
+    public List<Request> getPendingRequests() {
+        List<Request> list = new ArrayList<>();
         String sql = "SELECT * FROM requests WHERE status = 'PENDING' ORDER BY requestID ASC";
         try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                list.add(new com.example.disasterreport.model.Request(rs.getInt("requestID"), rs.getString("username"),
+                list.add(new Request(rs.getInt("requestID"), rs.getString("username"),
                         rs.getString("type"), rs.getString("details"), rs.getString("status")));
             }
         } catch (SQLException e) { e.printStackTrace(); }

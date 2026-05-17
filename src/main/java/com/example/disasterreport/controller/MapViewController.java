@@ -1,6 +1,7 @@
 package com.example.disasterreport.controller;
 
 import com.example.disasterreport.model.Incident;
+import com.example.disasterreport.model.User;
 import com.example.disasterreport.util.DatabaseManager;
 import javafx.application.Platform;
 import javafx.animation.PauseTransition;
@@ -64,9 +65,11 @@ public class MapViewController implements Initializable {
 
     public void setMainController(MainController mc) { this.mainController = mc; }
 
-    public void setCurrentUserRole(String role) {
-        boolean canUpdate = "admin".equals(role) || "responder".equals(role);
-        btnUpdateStatus.setVisible(canUpdate); btnUpdateStatus.setManaged(canUpdate);
+    public void setCurrentUser(User currentUser) {
+        // Let the User object decide its own permissions!
+        boolean canUpdate = currentUser != null && currentUser.canUpdateIncidentStatus();
+        btnUpdateStatus.setVisible(canUpdate);
+        btnUpdateStatus.setManaged(canUpdate);
     }
 
     @Override

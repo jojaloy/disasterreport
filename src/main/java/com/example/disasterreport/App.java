@@ -22,8 +22,7 @@ public class App extends Application {
         DatabaseManager.getInstance();
         new File("offline_tiles").mkdirs();
 
-        syncManager = new SyncManager();
-        syncManager.startAutoSync();
+        SyncManager.getInstance().startAutoSync();
 
         tileServer = new OfflineTileServer();
         tileServer.startServer();

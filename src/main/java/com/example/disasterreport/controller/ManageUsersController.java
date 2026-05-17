@@ -27,7 +27,7 @@ public class ManageUsersController implements Initializable {
     @FXML private TableView<User>             userTable;
     @FXML private TableColumn<User, Integer>  idCol;
     @FXML private TableColumn<User, String>   usernameCol;
-    @FXML private TableColumn<User, String>   roleCol;
+    @FXML private TableColumn<User, String>   roleCol; // Maps to roleName now!
     @FXML private Label                       userCountLabel;
 
     // Requests Table
@@ -52,14 +52,17 @@ public class ManageUsersController implements Initializable {
         // Init Users Table
         idCol.setCellValueFactory(new PropertyValueFactory<>("userID"));
         usernameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
-        roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
+
+        // OOP UPDATE: Use "roleName" instead of "role" to match the User abstract class
+        roleCol.setCellValueFactory(new PropertyValueFactory<>("roleName"));
+
         roleCol.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String role, boolean empty) {
-                super.updateItem(role, empty);
-                if (empty || role == null) { setText(null); setStyle(""); return; }
-                String color = switch (role) { case "admin" -> "#dc2626"; case "responder" -> "#d97706"; default -> "#16a34a"; };
-                String icon = switch (role) { case "admin" -> "🔑"; case "responder" -> "🚒"; default -> "📝"; };
-                setText(icon + "  " + role.substring(0,1).toUpperCase() + role.substring(1));
+            @Override protected void updateItem(String roleName, boolean empty) {
+                super.updateItem(roleName, empty);
+                if (empty || roleName == null) { setText(null); setStyle(""); return; }
+                String color = switch (roleName) { case "admin" -> "#dc2626"; case "responder" -> "#d97706"; default -> "#16a34a"; };
+                String icon = switch (roleName) { case "admin" -> "🔑"; case "responder" -> "🚒"; default -> "📝"; };
+                setText(icon + "  " + roleName.substring(0,1).toUpperCase() + roleName.substring(1));
                 setStyle("-fx-font-weight: bold; -fx-text-fill: " + color + ";");
             }
         });
@@ -123,7 +126,10 @@ public class ManageUsersController implements Initializable {
             return;
         }
         editUsernameField.setText(currentEditUser.getUsername());
-        editRoleCombo.setValue(currentEditUser.getRole());
+
+        // OOP UPDATE: Use getRoleName()
+        editRoleCombo.setValue(currentEditUser.getRoleName());
+
         editPasswordField.clear();
         editUserOverlay.setVisible(true); editUserOverlay.setManaged(true);
     }
@@ -187,8 +193,19 @@ public class ManageUsersController implements Initializable {
                 ModernDialog.showMessage("Success", "Password reset successfully! Make sure to inform the user.", false);
                 loadData();
             }
-        } else if ("ROLE_CHANGE".equals(req.getType())) {
-            DatabaseManager.getInstance().updateUserRoleByUsername(req.getUsername(), req.getDetails());
+
+            // OOP FIX: Matched the string to the "ROLE_UPGRADE" constant used in ProfileController
+        } else if ("ROLE_UPGRADE".equals(req.getType())) {
+
+            // The details string looks like: "Requested: admin | Reason: I am staff"
+            // We need to extract just the role word.
+            String fullDetails = req.getDetails();
+            String requestedRole = "reporter"; // Default fallback
+
+            if (fullDetails.contains("admin")) requestedRole = "admin";
+            else if (fullDetails.contains("responder")) requestedRole = "responder";
+
+            DatabaseManager.getInstance().updateUserRoleByUsername(req.getUsername(), requestedRole);
             DatabaseManager.getInstance().updateRequestStatus(req.getRequestID(), "APPROVED");
             ModernDialog.showMessage("Success", "Role updated successfully!", false);
             loadData();

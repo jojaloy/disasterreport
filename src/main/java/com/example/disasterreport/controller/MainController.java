@@ -38,15 +38,26 @@ public class MainController {
         this.currentUser = user;
         loggedInUserLabel.setText("Logged in as: " + user.getUsername());
 
-        if ("admin".equals(user.getRole())) {
-            adminLabel.setVisible(true);       adminLabel.setManaged(true);
-            btnManageUsers.setVisible(true);   btnManageUsers.setManaged(true);
-            btnRequestRole.setVisible(false);  btnRequestRole.setManaged(false);
+        // --- NEW OOP LOGIC ---
+        // Let the User object dictate its own permissions!
+        if (user.canManageUsers()) {
+            adminLabel.setVisible(true);
+            adminLabel.setManaged(true);
+            btnManageUsers.setVisible(true);
+            btnManageUsers.setManaged(true);
         } else {
-            adminLabel.setVisible(false);      adminLabel.setManaged(false);
-            btnManageUsers.setVisible(false);  btnManageUsers.setManaged(false);
-            btnRequestRole.setVisible(true);   btnRequestRole.setManaged(true);
+            adminLabel.setVisible(false);
+            adminLabel.setManaged(false);
+            btnManageUsers.setVisible(false);
+            btnManageUsers.setManaged(false);
         }
+
+        // Hide the standalone Request Role button since it's now inside the Profile Tab!
+        if (btnRequestRole != null) {
+            btnRequestRole.setVisible(false);
+            btnRequestRole.setManaged(false);
+        }
+
         refreshDashboard();
     }
 
@@ -58,7 +69,8 @@ public class MainController {
         activeIncidentsLabel.setText(String.valueOf(active));
         resolvedIncidentsLabel.setText(String.valueOf(resolved));
 
-        if (currentUser != null && "admin".equals(currentUser.getRole())) {
+        // OOP UPDATE: Use canManageUsers() instead of checking string roles
+        if (currentUser != null && currentUser.canManageUsers()) {
             int reqCount = DatabaseManager.getInstance().getPendingRequestsCount();
             if (reqCount > 0) {
                 btnManageUsers.setText("Manage Users (" + reqCount + ")");
@@ -163,11 +175,10 @@ public class MainController {
         locCol.setCellValueFactory(new PropertyValueFactory<>("location"));
         locCol.setPrefWidth(240);
 
-        // NEW: Reported By Column
         TableColumn<Incident, String> repCol = new TableColumn<>("Reported By");
         repCol.setCellValueFactory(new PropertyValueFactory<>("reportedBy"));
         repCol.setPrefWidth(120);
-        repCol.setStyle("-fx-text-fill: #6b7280;"); // Slightly dimmed text for the username
+        repCol.setStyle("-fx-text-fill: #6b7280;");
 
         TableColumn<Incident, String> sevCol = new TableColumn<>("Severity");
         sevCol.setCellValueFactory(new PropertyValueFactory<>("severity"));
@@ -201,7 +212,6 @@ public class MainController {
             }
         });
 
-        // Add the columns, including repCol
         table.getColumns().addAll(idCol, typeCol, locCol, repCol, sevCol, statCol);
 
         ObservableList<Incident> allData = FXCollections.observableArrayList(DatabaseManager.getInstance().getIncidents());
@@ -214,7 +224,7 @@ public class MainController {
                 return inc.getLocation().toLowerCase().contains(lower)
                         || inc.getType().toLowerCase().contains(lower)
                         || inc.getStatus().toLowerCase().contains(lower)
-                        || inc.getReportedBy().toLowerCase().contains(lower); // Allow searching by user!
+                        || inc.getReportedBy().toLowerCase().contains(lower);
             });
         });
 
@@ -239,7 +249,6 @@ public class MainController {
     @FXML private void showMapView() { setActiveNavButton(btnMapView); loadView("MapView.fxml"); }
     @FXML private void showProfile() { setActiveNavButton(btnProfile); loadView("ProfileView.fxml"); }
 
-    // Admin only
     @FXML private void showManageUsers() { setActiveNavButton(btnManageUsers); loadView("Manageusersview.fxml"); }
 
     private void openMapWithIncident(int incidentId) {
@@ -253,7 +262,8 @@ public class MainController {
 
             if (ctrl instanceof MapViewController mc) {
                 mc.setMainController(this);
-                if (currentUser != null) mc.setCurrentUserRole(currentUser.getRole());
+                // OOP UPDATE: Passing the object, not the string!
+                if (currentUser != null) mc.setCurrentUser(currentUser);
                 mc.loadIncidents(DatabaseManager.getInstance().getIncidents());
                 mc.viewSpecificIncident(incidentId);
             }
@@ -265,6 +275,8 @@ public class MainController {
 
     @FXML
     private void handleRequestRole() {
+        // Left this safely intact in case your FXML still triggers it,
+        // though the Profile View is the new home for this feature!
         java.util.Optional<String> result = com.example.disasterreport.util.ModernDialog.showChoice(
                 "Request Role Change",
                 "Select the role you are applying for:",
@@ -307,7 +319,8 @@ public class MainController {
             // Pass references down
             if (ctrl instanceof MapViewController mc) {
                 mc.setMainController(this);
-                if (currentUser != null) mc.setCurrentUserRole(currentUser.getRole());
+                // OOP UPDATE: Passing the object, not the string!
+                if (currentUser != null) mc.setCurrentUser(currentUser);
                 mc.loadIncidents(DatabaseManager.getInstance().getIncidents());
             }
             if (ctrl instanceof ReportIncidentController rc && currentUser != null) {
@@ -315,7 +328,8 @@ public class MainController {
                 rc.setMainController(this);
             }
             if (ctrl instanceof ProfileController pc) {
-                pc.setCurrentUser(currentUser);
+                // OOP UPDATE: Updated to match your new ProfileController method
+                pc.setUserInfo(currentUser);
             }
             if (ctrl instanceof ManageUsersController uc) {
                 uc.setMainController(this);

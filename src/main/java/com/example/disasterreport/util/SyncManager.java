@@ -1,68 +1,85 @@
 package com.example.disasterreport.util;
 
 import com.example.disasterreport.model.Incident;
-import java.net.Socket;
-import java.sql.*;
-import java.time.LocalDate;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SyncManager {
-    private static final String LOCAL_DB = "jdbc:sqlite:offline_cache.db";
-    private ScheduledExecutorService scheduler;
+    private static SyncManager instance;
+    private Thread backgroundSyncThread;
+    private static final String CACHE_FILE = "offline_cache.dat";
 
-    public SyncManager() { createLocalTable(); }
+    private SyncManager() {}
 
-    private void createLocalTable() {
-        try (Connection conn = DriverManager.getConnection(LOCAL_DB);
-             Statement stmt = conn.createStatement()) {
-            stmt.execute("CREATE TABLE IF NOT EXISTS offline_incidents (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT, location TEXT, " +
-                    "description TEXT, date TEXT, status TEXT, severity TEXT, " +
-                    "reportedBy TEXT, lat REAL, lng REAL, image_data TEXT)"); // Added image_data
-        } catch (Exception e) { e.printStackTrace(); }
+    public static SyncManager getInstance() {
+        if (instance == null) instance = new SyncManager();
+        return instance;
     }
 
-    public void queueLocally(Incident inc) {
-        String sql = "INSERT INTO offline_incidents (type, location, description, date, status, severity, reportedBy, lat, lng, image_data) VALUES (?,?,?,?,?,?,?,?,?,?)";
-        try (Connection conn = DriverManager.getConnection(LOCAL_DB);
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, inc.getType()); ps.setString(2, inc.getLocation()); ps.setString(3, inc.getDescription());
-            ps.setString(4, inc.getDate().toString()); ps.setString(5, inc.getStatus()); ps.setString(6, inc.getSeverity());
-            ps.setString(7, inc.getReportedBy()); ps.setDouble(8, inc.getLatitude()); ps.setDouble(9, inc.getLongitude());
-            ps.setString(10, inc.getImageData());
-            ps.executeUpdate();
-            System.out.println("No connection. Incident queued offline.");
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
+    // --- PART 4: Raw Thread Implementation ---
     public void startAutoSync() {
-        scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(this::syncPendingData, 5, 15, TimeUnit.SECONDS);
+        backgroundSyncThread = new Thread(() -> {
+            while (true) {
+                try {
+                    if (isInternetAvailable()) syncPendingData();
+                    Thread.sleep(15000); // Sleep for 15 seconds
+                } catch (InterruptedException e) {
+                    System.out.println("Sync thread stopped.");
+                    break;
+                }
+            }
+        });
+        backgroundSyncThread.setDaemon(true); // Kills thread when app closes
+        backgroundSyncThread.start();
+    }
+
+    public static boolean isInternetAvailable() {
+        try {
+            URLConnection connection = new URL("http://www.google.com").openConnection();
+            connection.connect();
+            return true;
+        } catch (Exception e) { return false; }
+    }
+
+    // --- PART 3: Serialization Implementation ---
+    public void queueLocally(Incident inc) {
+        List<Incident> pending = getLocalIncidents();
+        pending.add(inc);
+        saveLocalIncidents(pending);
+        System.out.println("Saved to offline .dat file.");
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Incident> getLocalIncidents() {
+        File file = new File(CACHE_FILE);
+        if (!file.exists()) return new ArrayList<>();
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+            return (List<Incident>) in.readObject();
+        } catch (Exception e) { return new ArrayList<>(); }
+    }
+
+    private void saveLocalIncidents(List<Incident> incidents) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(CACHE_FILE))) {
+            out.writeObject(incidents);
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     private void syncPendingData() {
-        if (!isInternetAvailable()) return;
+        List<Incident> offlineReports = getLocalIncidents();
+        if (offlineReports.isEmpty()) return;
 
-        try (Connection conn = DriverManager.getConnection(LOCAL_DB);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM offline_incidents")) {
-
-            while (rs.next()) {
-                Incident inc = new Incident(0, rs.getString("type"), rs.getString("location"),
-                        rs.getString("description"), LocalDate.parse(rs.getString("date")),
-                        rs.getString("status"), rs.getString("severity"), rs.getString("reportedBy"),
-                        rs.getDouble("lat"), rs.getDouble("lng"), rs.getString("image_data"));
-
+        try {
+            for (Incident inc : offlineReports) {
                 DatabaseManager.getInstance().saveIncident(inc);
-                conn.createStatement().execute("DELETE FROM offline_incidents WHERE id = " + rs.getInt("id"));
-                System.out.println("Offline report synced successfully!");
             }
-        } catch (Exception e) {}
-    }
-
-    private boolean isInternetAvailable() {
-        try (Socket socket = new Socket("8.8.8.8", 53)) { return true; } catch (Exception e) { return false; }
+            new File(CACHE_FILE).delete(); // Wipe cache on successful upload
+            System.out.println("Successfully synced offline data to MySQL!");
+        } catch (Exception e) {
+            // If DB fails, do nothing. Data stays in the .dat file.
+        }
     }
 }
