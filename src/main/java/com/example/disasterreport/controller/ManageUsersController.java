@@ -20,29 +20,46 @@ import java.util.ResourceBundle;
 public class ManageUsersController implements Initializable {
 
     // Tab Controls
-    @FXML private Button tabUsers, tabRequests;
-    @FXML private VBox usersContainer, requestsContainer;
+    @FXML
+    private Button tabUsers, tabRequests;
+    @FXML
+    private VBox usersContainer, requestsContainer;
 
     // Users Table
-    @FXML private TableView<User>             userTable;
-    @FXML private TableColumn<User, Integer>  idCol;
-    @FXML private TableColumn<User, String>   usernameCol;
-    @FXML private TableColumn<User, String>   roleCol; // Maps to roleName now!
-    @FXML private Label                       userCountLabel;
+    @FXML
+    private TableView<User> userTable;
+    @FXML
+    private TableColumn<User, Integer> idCol;
+    @FXML
+    private TableColumn<User, String> usernameCol;
+    @FXML
+    private TableColumn<User, String> roleCol; // Maps to roleName now!
+    @FXML
+    private Label userCountLabel;
 
     // Requests Table
-    @FXML private TableView<Request>             requestTable;
-    @FXML private TableColumn<Request, Integer>  reqIdCol;
-    @FXML private TableColumn<Request, String>   reqUsernameCol;
-    @FXML private TableColumn<Request, String>   reqTypeCol;
-    @FXML private TableColumn<Request, String>   reqDetailsCol;
-    @FXML private TableColumn<Request, String>   reqStatusCol;
-    @FXML private Label                          requestCountLabel;
+    @FXML
+    private TableView<Request> requestTable;
+    @FXML
+    private TableColumn<Request, Integer> reqIdCol;
+    @FXML
+    private TableColumn<Request, String> reqUsernameCol;
+    @FXML
+    private TableColumn<Request, String> reqTypeCol;
+    @FXML
+    private TableColumn<Request, String> reqDetailsCol;
+    @FXML
+    private TableColumn<Request, String> reqStatusCol;
+    @FXML
+    private Label requestCountLabel;
 
     // Edit User Overlay
-    @FXML private StackPane editUserOverlay;
-    @FXML private TextField editUsernameField, editPasswordField;
-    @FXML private ComboBox<String> editRoleCombo;
+    @FXML
+    private StackPane editUserOverlay;
+    @FXML
+    private TextField editUsernameField, editPasswordField;
+    @FXML
+    private ComboBox<String> editRoleCombo;
 
     private MainController mainController;
     private User currentEditUser = null;
@@ -57,12 +74,25 @@ public class ManageUsersController implements Initializable {
         roleCol.setCellValueFactory(new PropertyValueFactory<>("roleName"));
 
         roleCol.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String roleName, boolean empty) {
+            @Override
+            protected void updateItem(String roleName, boolean empty) {
                 super.updateItem(roleName, empty);
-                if (empty || roleName == null) { setText(null); setStyle(""); return; }
-                String color = switch (roleName) { case "admin" -> "#dc2626"; case "responder" -> "#d97706"; default -> "#16a34a"; };
-                String icon = switch (roleName) { case "admin" -> "🔑"; case "responder" -> "🚒"; default -> "📝"; };
-                setText(icon + "  " + roleName.substring(0,1).toUpperCase() + roleName.substring(1));
+                if (empty || roleName == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                String color = switch (roleName) {
+                    case "admin" -> "#dc2626";
+                    case "responder" -> "#d97706";
+                    default -> "#16a34a";
+                };
+                String icon = switch (roleName) {
+                    case "admin" -> "🔑";
+                    case "responder" -> "🚒";
+                    default -> "📝";
+                };
+                setText(icon + "  " + roleName.substring(0, 1).toUpperCase() + roleName.substring(1));
                 setStyle("-fx-font-weight: bold; -fx-text-fill: " + color + ";");
             }
         });
@@ -76,17 +106,25 @@ public class ManageUsersController implements Initializable {
         reqDetailsCol.setCellValueFactory(new PropertyValueFactory<>("details"));
         reqStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         reqStatusCol.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String status, boolean empty) {
+            @Override
+            protected void updateItem(String status, boolean empty) {
                 super.updateItem(status, empty);
-                if (empty || status == null) { setText(null); setStyle(""); return; }
-                setText(status); setStyle("-fx-font-weight: bold; -fx-text-fill: #d97706;");
+                if (empty || status == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(status);
+                setStyle("-fx-font-weight: bold; -fx-text-fill: #d97706;");
             }
         });
 
         loadData();
     }
 
-    public void setMainController(MainController mc) { this.mainController = mc; }
+    public void setMainController(MainController mc) {
+        this.mainController = mc;
+    }
 
     private void loadData() {
         ObservableList<User> users = FXCollections.observableArrayList(DatabaseManager.getInstance().getAllUsers());
@@ -103,23 +141,30 @@ public class ManageUsersController implements Initializable {
 
     // ── Tab Switching ──
 
-    @FXML private void showUsersTab() {
+    @FXML
+    private void showUsersTab() {
         tabUsers.setStyle("-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 8 16;");
         tabRequests.setStyle("-fx-background-color: #f3f4f6; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 8 16;");
-        usersContainer.setVisible(true); usersContainer.setManaged(true);
-        requestsContainer.setVisible(false); requestsContainer.setManaged(false);
+        usersContainer.setVisible(true);
+        usersContainer.setManaged(true);
+        requestsContainer.setVisible(false);
+        requestsContainer.setManaged(false);
     }
 
-    @FXML private void showRequestsTab() {
+    @FXML
+    private void showRequestsTab() {
         tabRequests.setStyle("-fx-background-color: #e8550a; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 8 16;");
         tabUsers.setStyle("-fx-background-color: #f3f4f6; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 8 16;");
-        requestsContainer.setVisible(true); requestsContainer.setManaged(true);
-        usersContainer.setVisible(false); usersContainer.setManaged(false);
+        requestsContainer.setVisible(true);
+        requestsContainer.setManaged(true);
+        usersContainer.setVisible(false);
+        usersContainer.setManaged(false);
     }
 
     // ── User Management ──
 
-    @FXML private void handleEditUser() {
+    @FXML
+    private void handleEditUser() {
         currentEditUser = userTable.getSelectionModel().getSelectedItem();
         if (currentEditUser == null) {
             ModernDialog.showMessage("Action Required", "Please select a user to edit.", true);
@@ -131,22 +176,27 @@ public class ManageUsersController implements Initializable {
         editRoleCombo.setValue(currentEditUser.getRoleName());
 
         editPasswordField.clear();
-        editUserOverlay.setVisible(true); editUserOverlay.setManaged(true);
+        editUserOverlay.setVisible(true);
+        editUserOverlay.setManaged(true);
     }
 
-    @FXML private void closeEditOverlay() {
-        editUserOverlay.setVisible(false); editUserOverlay.setManaged(false);
+    @FXML
+    private void closeEditOverlay() {
+        editUserOverlay.setVisible(false);
+        editUserOverlay.setManaged(false);
         currentEditUser = null;
     }
 
-    @FXML private void saveUserEdit() {
+    @FXML
+    private void saveUserEdit() {
         if (currentEditUser == null) return;
         String newName = editUsernameField.getText().trim();
         String newRole = editRoleCombo.getValue();
         String newPass = editPasswordField.getText();
 
         if (newName.isEmpty() || newRole == null) {
-            ModernDialog.showMessage("Validation Error", "Username and Role cannot be empty.", true); return;
+            ModernDialog.showMessage("Validation Error", "Username and Role cannot be empty.", true);
+            return;
         }
 
         boolean ok = DatabaseManager.getInstance().updateUserAdmin(currentEditUser.getUserID(), newName, newRole, newPass);
@@ -159,10 +209,12 @@ public class ManageUsersController implements Initializable {
         }
     }
 
-    @FXML private void handleDeleteUser() {
+    @FXML
+    private void handleDeleteUser() {
         User selected = userTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            ModernDialog.showMessage("Action Required", "Please select a user to delete.", true); return;
+            ModernDialog.showMessage("Action Required", "Please select a user to delete.", true);
+            return;
         }
 
         Optional<String> choice = ModernDialog.showChoice("Confirm Deletion",
@@ -181,7 +233,8 @@ public class ManageUsersController implements Initializable {
 
     // ── Request Management ──
 
-    @FXML private void handleApproveRequest() {
+    @FXML
+    private void handleApproveRequest() {
         Request req = requestTable.getSelectionModel().getSelectedItem();
         if (req == null) { ModernDialog.showMessage("Action Required", "Select a request to approve.", true); return; }
 
@@ -194,16 +247,17 @@ public class ManageUsersController implements Initializable {
                 loadData();
             }
 
-            // OOP FIX: Matched the string to the "ROLE_UPGRADE" constant used in ProfileController
         } else if ("ROLE_UPGRADE".equals(req.getType())) {
 
-            // The details string looks like: "Requested: admin | Reason: I am staff"
-            // We need to extract just the role word.
-            String fullDetails = req.getDetails();
+            // FIX: Convert the entire details string to lowercase so .contains() works perfectly!
+            String fullDetails = req.getDetails().toLowerCase();
             String requestedRole = "reporter"; // Default fallback
 
-            if (fullDetails.contains("admin")) requestedRole = "admin";
-            else if (fullDetails.contains("responder")) requestedRole = "responder";
+            if (fullDetails.contains("admin")) {
+                requestedRole = "admin";
+            } else if (fullDetails.contains("responder")) {
+                requestedRole = "responder";
+            }
 
             DatabaseManager.getInstance().updateUserRoleByUsername(req.getUsername(), requestedRole);
             DatabaseManager.getInstance().updateRequestStatus(req.getRequestID(), "APPROVED");
@@ -211,10 +265,13 @@ public class ManageUsersController implements Initializable {
             loadData();
         }
     }
-
-    @FXML private void handleRejectRequest() {
+    @FXML
+    private void handleRejectRequest() {
         Request req = requestTable.getSelectionModel().getSelectedItem();
-        if (req == null) { ModernDialog.showMessage("Action Required", "Select a request to reject.", true); return; }
+        if (req == null) {
+            ModernDialog.showMessage("Action Required", "Select a request to reject.", true);
+            return;
+        }
 
         DatabaseManager.getInstance().updateRequestStatus(req.getRequestID(), "REJECTED");
         ModernDialog.showMessage("Rejected", "Request has been rejected.", false);

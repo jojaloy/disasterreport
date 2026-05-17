@@ -210,9 +210,18 @@ public class DatabaseManager {
     }
 
     public void updateUserRoleByUsername(String username, String newRole) {
-        String sql = "UPDATE users SET role = ? WHERE username = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, newRole); ps.setString(2, username); ps.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+        String query = "UPDATE users SET role = ? WHERE username = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            // Make sure the role string is lowercase (e.g., "responder" or "admin")
+            pstmt.setString(1, newRole.toLowerCase());
+            pstmt.setString(2, username);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
